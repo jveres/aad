@@ -491,3 +491,17 @@ Test keyboard navigation.
 ## References
 - [UI requirements](../requirements/ui.md)
 `;
+
+// Prompt for a fresh agent in an empty or existing project folder. Keep in sync
+// with the README "Adopt AAD in a project" section; check-version.js checks the URL.
+export function adoptPrompt(repo: string, version: string): string {
+  return `Set up AAD (Agent-Assisted Development) ${version} in this project folder. The folder can be empty or an existing project.
+
+1. Download the guide: mkdir -p wiki && curl -fsSL https://raw.githubusercontent.com/${repo}/v${version}/aad.md -o wiki/aad.md
+   If wiki/aad.md already exists, compare the versions and ask me before you replace it. Read the full guide. §13 Adoption is the checklist; §9 has the AGENTS.md template.
+2. Examine the folder: Git repository, remote and default branch, README, AGENTS.md, CLAUDE.md and other agent instruction files, docs, build and test commands, CI. If there is no Git repository, ask me before you run git init. Do not overwrite or move existing files. Extend them, or link to existing equivalents.
+3. Create or extend AGENTS.md, wiki/README.md, and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, task ID allocation, publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
+4. Create other documents only when they have real content now. Ask me for one small, real first task and create it in wiki/tasks/.
+5. Show me the changes and the 14 adoption steps, each marked done or gap. Do not commit or push without my approval.
+6. Tell me how to test the setup: a new agent session without this conversation does the next activity of the first task, and a second agent reviews the result.`;
+}

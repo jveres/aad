@@ -35,14 +35,33 @@ People remain responsible for project policies, access, and approval decisions.
 
 ## Adopt AAD in a project
 
-Get a pinned copy of the spec. The tag matches the AAD version:
+Open an agent in the project folder and paste this prompt. The folder can be
+empty or an existing project. You do not need to download anything first.
+
+```text
+Set up AAD (Agent-Assisted Development) 2.2.1 in this project folder. The folder can be empty or an existing project.
+
+1. Download the guide: mkdir -p wiki && curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.2.1/aad.md -o wiki/aad.md
+   If wiki/aad.md already exists, compare the versions and ask me before you replace it. Read the full guide. §13 Adoption is the checklist; §9 has the AGENTS.md template.
+2. Examine the folder: Git repository, remote and default branch, README, AGENTS.md, CLAUDE.md and other agent instruction files, docs, build and test commands, CI. If there is no Git repository, ask me before you run git init. Do not overwrite or move existing files. Extend them, or link to existing equivalents.
+3. Create or extend AGENTS.md, wiki/README.md, and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, task ID allocation, publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
+4. Create other documents only when they have real content now. Ask me for one small, real first task and create it in wiki/tasks/.
+5. Show me the changes and the 14 adoption steps, each marked done or gap. Do not commit or push without my approval.
+6. Tell me how to test the setup: a new agent session without this conversation does the next activity of the first task, and a second agent reviews the result.
+```
+
+The agent stops for your decisions and approvals. Then it gives you the
+trial to run (steps 11–14 below). Those steps need fresh agent sessions.
+
+To get only the guide, without the agent setup, download a pinned copy. The tag
+matches the AAD version:
 
 ```sh
 mkdir -p wiki/tasks && \
   curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.2.1/aad.md -o wiki/aad.md
 ```
 
-Then follow the adoption steps in [`aad.md` §13](aad.md#13-adoption). Start with one small task:
+The adoption steps in [`aad.md` §13](aad.md#13-adoption):
 
 1. Add the guide as `wiki/aad.md`.
 2. Create `AGENTS.md` (template in [§9](aad.md#9-agent-entry-point)) and the wiki index.

@@ -1,6 +1,7 @@
 import {
   ACTIVITIES,
   ADOPTION,
+  adoptPrompt,
   CASES,
   CORE_RULES,
   SAMPLE_TASK,
@@ -84,6 +85,7 @@ function renderVersion(): void {
     "mkdir -p wiki/tasks",
     `curl -fsSL https://raw.githubusercontent.com/${REPO}/v${guideVersion}/aad.md -o wiki/aad.md`,
   ].join(" && \\\n  ");
+  $("#adopt-prompt").textContent = adoptPrompt(REPO, guideVersion);
   const current = $<HTMLInputElement>("[data-read-current]");
   if (!current.value) current.value = guideVersion;
 }

@@ -360,6 +360,19 @@ main {
   color: var(--accent);
 }
 
+.term + .term {
+  margin-top: 12px;
+}
+
+.term.prompt pre {
+  max-height: 22em;
+  white-space: pre-wrap;
+}
+
+.term.prompt pre code::before {
+  content: none;
+}
+
 .copy,
 .ghost {
   background: none;
