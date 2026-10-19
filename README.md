@@ -230,7 +230,7 @@ from the spec (core rule 1).
 
 | Section | What you can do |
 |---|---|
-| §02 Repository | Explore the layout and the accepted source for each path |
+| §02 Repository | Explore the layout, the accepted source, and an example file for each path (spec examples are checked against `aad.md`) |
 | §03 Lifecycle | Drive a task through the state machine; see routine, approval-gated, and rejected transitions |
 | §04 Linter | Edit a task file and get live diagnostics (header, sections, `Next`, transitions, dependencies, version) |
 | §05 Publication | Compose a pull request and see its classification and publication path |
@@ -267,10 +267,11 @@ src/
   publication.ts          # pull request classification
   versioning.ts           # reading rule, version bump
   content.ts              # page content condensed from aad.md
+  samples.ts              # example file for each §02 path
   dom.ts                  # small DOM helpers (no innerHTML)
   main.ts                 # page wiring
 scripts/
-  build.js  check-version.js  serve.js
+  build.js  check-version.js  check-samples.js  serve.js
 .github/workflows/pages.yml  # check, build, deploy to GitHub Pages
 ```
 

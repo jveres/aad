@@ -20,6 +20,7 @@ import {
   TRANSITIONS,
 } from "./model.js";
 import { CHANGES, classifyCandidate } from "./publication.js";
+import { SAMPLES } from "./samples.js";
 import { lintTask } from "./task-lint.js";
 import { applyBump, IMPACTS, isSemver, readingRule, selectBump } from "./versioning.js";
 
@@ -148,6 +149,7 @@ function renderTree(): void {
   const select = (i: number) => {
     const node = TREE[i];
     if (!node) return;
+    const sample = SAMPLES[node.name];
     for (const [j, b] of list.querySelectorAll("button").entries()) {
       b.setAttribute("aria-pressed", String(j === i));
     }
@@ -158,10 +160,14 @@ function renderTree(): void {
       ...(node.source
         ? [h("p", { class: "label" }, "accepted source for"), h("p", {}, node.source)]
         : []),
-      ...(node.sample
+      ...(sample
         ? [
-            h("p", { class: "label" }, `example · ${node.sample.file}`),
-            h("pre", { class: "sample" }, h("code", {}, node.sample.text)),
+            h(
+              "p",
+              { class: "label" },
+              `example · ${sample.file} · ${sample.fromSpec ? "from aad.md" : "illustrative"}`,
+            ),
+            h("pre", { class: "sample" }, h("code", {}, sample.text)),
           ]
         : []),
     );

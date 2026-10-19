@@ -14,7 +14,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "tsc -p . && node scripts/build.js",
+    "build": "tsc -p . && node scripts/build.js && node scripts/check-samples.js",
     "typecheck": "tsc -p . --noEmit",
     "lint": "biome check .",
     "format": "biome check --write .",
