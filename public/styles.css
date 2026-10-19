@@ -15,6 +15,7 @@
   --warn: #f2b84b;
   --info: #7aa7ff;
   --bad: #ff6b6b;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23a3aba8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
   --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --gutter: 24px;
@@ -38,6 +39,7 @@
     --warn: #9a5b00;
     --info: #2453c4;
     --bad: #c42b2b;
+    --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233d4447' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     color-scheme: light;
   }
 }
@@ -57,6 +59,7 @@
   --warn: #9a5b00;
   --info: #2453c4;
   --bad: #c42b2b;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%233d4447' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   color-scheme: light;
 }
 
@@ -855,14 +858,21 @@ main {
 .lint {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
   border: 1px solid var(--line);
   border-radius: 4px;
   overflow: hidden;
 }
 
+/* Both panels share the parent's rows, so their headers always match in height. */
+.editor,
+.output {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+}
+
 .editor {
-  display: flex;
-  flex-direction: column;
   border-right: 1px solid var(--line);
 }
 
@@ -875,7 +885,6 @@ main {
   padding: 10px 14px;
   background: var(--bg-2);
   border-bottom: 1px solid var(--line);
-  min-height: 58px;
 }
 
 .output-head {
@@ -897,17 +906,29 @@ select {
   color: var(--fg);
   border: 1px solid var(--line-2);
   border-radius: 3px;
-  padding: 5px 8px;
+  padding: 0 8px;
+  height: 30px;
   font-size: 13px;
   min-width: 0;
+}
+
+select {
+  appearance: none;
+  /* Chevron sits 8px from the right edge, matching the 8px left padding. */
+  padding-right: 26px;
+  background: var(--bg) var(--chevron) no-repeat right 8px center / 10px 6px;
+  cursor: pointer;
 }
 
 .editor-head input {
   width: 120px;
 }
 
+.editor-head .ghost {
+  height: 30px;
+}
+
 textarea {
-  flex: 1;
   resize: vertical;
   min-height: 420px;
   background: var(--bg);
@@ -926,8 +947,6 @@ textarea:focus-visible {
 
 .output {
   background: var(--bg);
-  display: flex;
-  flex-direction: column;
 }
 
 .good {
