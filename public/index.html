@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AAD · Agent-Assisted Development</title>
+    <meta
+      name="description"
+      content="AAD defines how people and AI agents develop software with shared knowledge and shared tasks."
+    />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="js/main.js"></script>
+  </head>
+  <body>
+    <header class="bar">
+      <a class="mark" href="#top" aria-label="AAD home">
+        <span class="mark-box">AAD</span>
+        <span class="mark-ver" data-version>v—</span>
+      </a>
+      <nav aria-label="Sections">
+        <a href="#rules">rules</a>
+        <a href="#repo">repo</a>
+        <a href="#lifecycle">lifecycle</a>
+        <a href="#lint">lint</a>
+        <a href="#publish">publish</a>
+        <a href="#activities">activities</a>
+        <a href="#startup">startup</a>
+        <a href="#adopt">adopt</a>
+      </nav>
+      <div class="bar-end">
+        <a href="https://github.com/jveres/aad/blob/main/aad.md" class="ext">spec</a>
+        <a href="https://github.com/jveres/aad" class="ext">github</a>
+        <button type="button" class="theme" data-theme-toggle aria-label="Toggle color theme">◐</button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <p class="eyebrow">spec <span data-version>v—</span> · methodology</p>
+        <h1>Agent-Assisted<br />Development</h1>
+        <p class="lede">
+          A working process for people and AI agents that share knowledge and tasks.
+          A <em>worker</em> is a person or an agent. Each worker must be able to find the rules,
+          understand the task, and continue the work <strong>without earlier conversations</strong>.
+        </p>
+        <div class="term">
+          <div class="term-head">
+            <span>adopt</span>
+            <button type="button" class="copy" data-copy="#adopt-cmd">copy</button>
+          </div>
+          <pre><code id="adopt-cmd"></code></pre>
+        </div>
+        <dl class="facts">
+          <div><dt>workers</dt><dd>people + agents</dd></div>
+          <div><dt>source of truth</dt><dd>repo default branch</dd></div>
+          <div><dt>unit of work</dt><dd><code>wiki/tasks/T-*.md</code></dd></div>
+          <div><dt>authority</dt><dd>people approve</dd></div>
+        </dl>
+      </section>
+
+      <section id="rules" class="sec">
+        <header class="sec-head">
+          <span class="sec-no">§01</span>
+          <h2>Core rules</h2>
+          <p>Twelve rules. Everything else in the spec elaborates them.</p>
+        </header>
+        <ol class="rules" data-rules></ol>
+      </section>
+
+      <section id="repo" class="sec">
+        <header class="sec-head">
+          <span class="sec-no">§02</span>
+          <h2>Repository and knowledge</h2>
+          <p>
+            One accepted source per kind of information. Policy holds requirements,
+            configuration holds mechanics, decision records hold reasons.
+          </p>
+        </header>
+        <div class="split">
+          <ul class="tree" data-tree aria-label="Project layout"></ul>
+          <aside class="panel" data-tree-detail aria-live="polite"></aside>
+        </div>
+      </section>
+
+      <section id="lifecycle" class="sec">
+        <header class="sec-head">
+          <span class="sec-no">§03</span>
+          <h2>Task lifecycle</h2>
+          <p>
+            The transition table is authoritative. An unlisted transition is invalid, and
+            no approval can grant it. Try one.
+          </p>
+        </header>
+        <div class="machine">
+          <svg data-machine viewBox="0 0 820 260" role="img" aria-label="Task state diagram"></svg>
+          <div class="machine-ctl">
+            <div class="row">
+              <span class="label">current</span>
+              <span class="pill" data-current></span>
+              <label class="check">
+                <input type="checkbox" data-approval />
+                <span>approval granted</span>
+              </label>
+              <button type="button" class="ghost" data-reset>reset</button>
+            </div>
+            <div class="targets" data-targets></div>
+            <ol class="log" data-log aria-live="polite"></ol>
+          </div>
+        </div>
+        <div class="legend">
+          <span class="tag routine">routine</span>
+          <span class="tag approval-sensitive">approval-sensitive</span>
+          <span class="tag unclassified">unclassified</span>
+          <span class="tag invalid">invalid</span>
+        </div>
+      </section>
+
+      <section id="lint" class="sec">
+        <header class="sec-head">
+          <span class="sec-no">§04</span>
+          <h2>Task file linter</h2>
+          <p>
+            YAML header for tools, Markdown body for people. Edit the task; checks run as you type.
+            Structural checks cannot prove scope. Semantic review still applies.
+          </p>
+        </header>
+        <div class="lint">
+          <div class="editor">
+            <div class="editor-head">
+              <label>
+                <span class="label">file</span>
+                <input type="text" value="T-014.md" data-lint-file spellcheck="false" />
+              </label>
+              <label>
+                <span class="label">baseline status</span>
+                <select data-lint-prev>
+                  <option value="">(new task)</option>
+                  <option value="todo">todo</option>
+                  <option value="in_progress" selected>in_progress</option>
+                  <option value="review">review</option>
+                  <option value="done">done</option>
+                </select>
+              </label>
+              <button type="button" class="ghost" data-lint-reset>reset</button>
+            </div>
+            <textarea data-lint-input spellcheck="false" rows="22" aria-label="Task file"></textarea>
+          </div>
+          <div class="output">
+            <div class="output-head"><span class="label">output</span><span data-lint-summary></span></div>
+            <ol class="diag" data-lint-out aria-live="polite"></ol>
+          </div>
+        </div>
+      </section>
+
+      <section id="publish" class="sec">
+        <header class="sec-head">
+          <span class="sec-no">§05</span>
+          <h2>Publication classifier</h2>
+          <p>
+            A pull request is classified by its most restrictive change. Select what the candidate
+            contains.
+          </p>
+        </header>
+        <div class="split">
+          <form class="changes" data-changes></form>
+          <aside class="panel verdict" data-verdict aria-live="polite"></aside>
+        </div>
+      </section>
+
+      <section id="activities" class="sec">
+        <header class="sec-head">
+          <span class="sec-no">§06</span>
+          <h2>Development activities</h2>
+          <p>
+            The task goal defines the result. <code>Next</code> names the activity. Different agents can
+            do different activities in the same task.
+          </p>
+        </header>
+        <div class="tabs" role="tablist" data-tabs></div>
+        <div class="tab-body" data-tab-body role="tabpanel"></div>
+      </section>
+
+      <section id="startup" class="sec">
+        <header class="sec-head">
+          <span class="sec-no">§07</span>
+          <h2>Startup and guide reading</h2>
+          <p>Every worker runs the same startup. What it must re-read depends on what it knows.</p>
+        </header>
+        <div class="split">
+          <ol class="steps" data-startup></ol>
+          <div class="panel">
+            <h3>Reading rule</h3>
+            <div class="form">
+              <label>
+                <span class="label">last guide version read</span>
+                <input type="text" data-read-known placeholder="unknown" spellcheck="false" />
+              </label>
+              <label>
+                <span class="label">current shared guide</span>
+                <input type="text" data-read-current spellcheck="false" />
+              </label>
+              <label class="check">
+                <input type="checkbox" data-read-content />
+                <span>content differs from what I read</span>
+              </label>
+              <label class="check">
+                <input type="checkbox" data-read-diff checked />
+                <span>earlier content / complete diff available</span>
+              </label>
+            </div>
+            <div class="verdict-line" data-read-out aria-live="polite"></div>
+          </div>
+        </div>
+        <div class="panel bump">
+          <h3>Version a guide change</h3>
+          <p class="muted">Select by compatibility impact. The release takes its most significant change.</p>
+          <form class="impacts" data-impacts></form>
+          <div class="verdict-line" data-bump-out aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="adopt" class="sec">
+        <header class="sec-head">
+          <span class="sec-no">§08</span>
+          <h2>Adoption</h2>
+          <p>Start with one small task. Progress is saved in this browser only.</p>
+        </header>
+        <div class="split">
+          <div>
+            <div class="progress"><div class="progress-bar" data-adopt-bar></div></div>
+            <ol class="checklist" data-adopt></ol>
+          </div>
+          <div class="panel cases">
+            <h3>Decision cases</h3>
+            <input type="search" placeholder="filter cases…" data-case-filter aria-label="Filter decision cases" />
+            <ul data-cases></ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="changes" class="sec">
+        <header class="sec-head">
+          <span class="sec-no">§09</span>
+          <h2>Latest change</h2>
+          <p>Read from <code>aad.md</code> at load time.</p>
+        </header>
+        <div class="panel changelog" data-changelog></div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>AAD <span data-version>v—</span></span>
+      <span>Written in ASD-STE100 Simplified Technical English.</span>
+      <a href="https://github.com/jveres/aad">github.com/jveres/aad</a>
+    </footer>
+  </body>
+</html>

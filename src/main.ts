@@ -1,0 +1,662 @@
+import { ACTIVITIES, ADOPTION, CASES, CORE_RULES, SAMPLE_TASK, STARTUP, TREE } from "./content.js";
+import { $, h, inline, s, store } from "./dom.js";
+import {
+  BOARD_LABEL,
+  CREATION,
+  classifyTransition,
+  isState,
+  STATE_MEANING,
+  STATES,
+  type State,
+  TRANSITIONS,
+} from "./model.js";
+import { CHANGES, classifyCandidate } from "./publication.js";
+import { lintTask } from "./task-lint.js";
+import { applyBump, IMPACTS, isSemver, readingRule, selectBump } from "./versioning.js";
+
+const REPO = "jveres/aad";
+
+interface Spec {
+  readonly version: string;
+  readonly latest: { readonly version: string; readonly items: readonly string[] } | undefined;
+}
+
+let guideVersion = "2.1.0";
+
+// ── spec ─────────────────────────────────────────────────────────────────────
+
+export function parseSpec(text: string): Spec | undefined {
+  const version = /^---\r?\n(?:.*\r?\n)*?version:\s*(\d+\.\d+\.\d+)/m.exec(text)?.[1];
+  if (!version) return undefined;
+  const tail = text.split(/^## Latest Change\s*$/m)[1];
+  if (!tail) return { version, latest: undefined };
+  const lines = tail.trim().split(/\r?\n/);
+  const items: string[] = [];
+  for (const line of lines.slice(1)) {
+    if (/^-\s+/.test(line)) items.push(line.replace(/^-\s+/, ""));
+    else if (line.trim() && items.length > 0) items[items.length - 1] += ` ${line.trim()}`;
+  }
+  return { version, latest: { version: lines[0]?.trim() ?? version, items } };
+}
+
+async function loadSpec(): Promise<void> {
+  let spec: Spec | undefined;
+  try {
+    const res = await fetch("aad.md", { cache: "no-cache" });
+    if (res.ok) spec = parseSpec(await res.text());
+  } catch {
+    spec = undefined;
+  }
+  const log = $("[data-changelog]");
+  if (!spec) {
+    log.replaceChildren(
+      h("p", { class: "muted" }, "Could not read aad.md. See the spec on GitHub."),
+    );
+    renderVersion();
+    return;
+  }
+  guideVersion = spec.version;
+  renderVersion();
+  if (spec.latest) {
+    log.replaceChildren(
+      h("p", { class: "label" }, spec.latest.version),
+      h("ul", {}, ...spec.latest.items.map((i) => h("li", {}, inline(i)))),
+    );
+  }
+  lint.run();
+  reading.run();
+  bump.run();
+}
+
+function renderVersion(): void {
+  for (const el of document.querySelectorAll("[data-version]")) el.textContent = `v${guideVersion}`;
+  $("#adopt-cmd").textContent = [
+    "mkdir -p wiki/tasks",
+    `curl -fsSL https://raw.githubusercontent.com/${REPO}/v${guideVersion}/aad.md -o wiki/aad.md`,
+  ].join(" && \\\n  ");
+  const current = $<HTMLInputElement>("[data-read-current]");
+  if (!current.value) current.value = guideVersion;
+}
+
+// ── §01 rules ────────────────────────────────────────────────────────────────
+
+function renderRules(): void {
+  $("[data-rules]").replaceChildren(
+    ...CORE_RULES.map((r, i) =>
+      h("li", {}, h("span", { class: "n" }, String(i + 1).padStart(2, "0")), h("span", {}, r)),
+    ),
+  );
+}
+
+// ── §02 repository ───────────────────────────────────────────────────────────
+
+function renderTree(): void {
+  const list = $("[data-tree]");
+  const detail = $("[data-tree-detail]");
+  const select = (i: number) => {
+    const node = TREE[i];
+    if (!node) return;
+    for (const [j, b] of list.querySelectorAll("button").entries()) {
+      b.setAttribute("aria-pressed", String(j === i));
+    }
+    detail.replaceChildren(
+      h("p", { class: "label" }, node.optional ? "path · optional" : "path"),
+      h("h3", {}, h("code", {}, node.name)),
+      h("p", {}, inline(node.purpose)),
+      ...(node.source
+        ? [h("p", { class: "label" }, "accepted source for"), h("p", {}, node.source)]
+        : []),
+    );
+  };
+  list.replaceChildren(
+    ...TREE.map((node, i) =>
+      h(
+        "li",
+        { style: `--d:${node.depth}` },
+        h(
+          "button",
+          { type: "button", "aria-pressed": "false", onclick: () => select(i) },
+          h("span", { class: "branch" }, node.depth === 0 ? "" : "├─ "),
+          node.name,
+          node.optional ? h("span", { class: "muted" }, "  ?") : null,
+        ),
+      ),
+    ),
+  );
+  select(TREE.findIndex((n) => n.name === "tasks/"));
+}
+
+// ── §03 lifecycle ────────────────────────────────────────────────────────────
+
+const NODE_X: Record<State, number> = { todo: 100, in_progress: 310, review: 520, done: 720 };
+const NODE_Y = 130;
+
+function edgePath(from: State, to: State): { d: string; lx: number; ly: number } {
+  const x1 = NODE_X[from];
+  const x2 = NODE_X[to];
+  const dir = Math.sign(x2 - x1);
+  const span = Math.abs(x2 - x1);
+  const long = span > 250;
+  const above =
+    (dir > 0 && !(from === "review" && to === "todo")) || (from === "done" && to === "in_progress");
+  const off = long ? 14 : 36;
+  const y0 = above ? NODE_Y - 22 : NODE_Y + 22;
+  const lift = long ? 78 : 44;
+  const cy = above ? y0 - lift * 2 : y0 + lift * 2;
+  const sx = x1 + dir * off;
+  const ex = x2 - dir * off;
+  return {
+    d: `M ${sx} ${y0} Q ${(sx + ex) / 2} ${cy} ${ex} ${y0}`,
+    lx: (sx + ex) / 2,
+    ly: (y0 + cy) / 2 + (above ? -6 : 14),
+  };
+}
+
+const machine = {
+  current: "todo" as State,
+  steps: 0,
+
+  init(): void {
+    const svg = $<SVGSVGElement>("[data-machine]");
+    const defs = s("defs");
+    for (const cls of ["routine", "approval-sensitive"]) {
+      const m = s("marker", {
+        id: `arrow-${cls}`,
+        viewBox: "0 0 10 10",
+        refX: 9,
+        refY: 5,
+        markerWidth: 7,
+        markerHeight: 7,
+        orient: "auto-start-reverse",
+      });
+      m.append(s("path", { d: "M0,0 L10,5 L0,10 z", class: `arrow ${cls}` }));
+      defs.append(m);
+    }
+    svg.append(defs);
+    for (const t of TRANSITIONS) {
+      const g = s("g", { class: `edge ${t.classification}`, "data-from": t.from, "data-to": t.to });
+      const p = edgePath(t.from, t.to);
+      g.append(
+        s("path", { d: p.d, "marker-end": `url(#arrow-${t.classification})` }),
+        s(
+          "text",
+          { x: p.lx, y: p.ly, "text-anchor": "middle" },
+          t.classification === "routine" ? "" : "approval",
+        ),
+      );
+      svg.append(g);
+    }
+    for (const st of STATES) {
+      const g = s("g", { class: "node", "data-state": st, tabindex: 0, role: "button" });
+      g.setAttribute("aria-label", `${BOARD_LABEL[st]}: ${STATE_MEANING[st]}`);
+      g.append(
+        s("rect", { x: NODE_X[st] - 70, y: NODE_Y - 22, width: 140, height: 44, rx: 4 }),
+        s("text", { x: NODE_X[st], y: NODE_Y + 5, "text-anchor": "middle" }, st),
+      );
+      g.addEventListener("click", () => this.attempt(st));
+      g.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this.attempt(st);
+        }
+      });
+      svg.append(g);
+    }
+    $("[data-reset]").addEventListener("click", () => this.reset());
+    this.reset();
+  },
+
+  reset(): void {
+    this.current = "todo";
+    this.steps = 0;
+    $<HTMLInputElement>("[data-approval]").checked = false;
+    const creation = CREATION.map(
+      (c) => `${c.status}${c.classification === "routine" ? "" : "*"}`,
+    ).join(" | ");
+    $("[data-log]").replaceChildren();
+    this.log("info", `create task → todo   (creation allowed in: ${creation}; * needs approval)`);
+    this.render();
+  },
+
+  log(kind: string, text: string): void {
+    const n = String(this.steps).padStart(2, "0");
+    const li = h("li", { class: kind }, h("span", { class: "n" }, n), text);
+    const log = $("[data-log]");
+    log.prepend(li);
+    while (log.children.length > 8) log.lastElementChild?.remove();
+  },
+
+  attempt(to: State): void {
+    const from = this.current;
+    if (from === to) {
+      this.log("info", `${from} → ${to}   no-op: keeping the same status is not a transition`);
+      return;
+    }
+    this.steps++;
+    const v = classifyTransition(from, to);
+    const approval = $<HTMLInputElement>("[data-approval]");
+    if (v.classification === "invalid") {
+      this.log(
+        "invalid",
+        `${from} → ${to}   REJECTED  unlisted transition${approval.checked ? " (approval ignored)" : ""}`,
+      );
+      return;
+    }
+    if (v.classification === "approval-sensitive" && !approval.checked) {
+      this.log(
+        "approval-sensitive",
+        `${from} → ${to}   BLOCKED   needs authorized approval; stays in ${from}`,
+      );
+      return;
+    }
+    this.current = to;
+    if (v.classification === "approval-sensitive") approval.checked = false;
+    const next = to === "done" ? "Next: None" : "Next: <action>";
+    this.log(v.classification, `${from} → ${to}   ok  ${v.classification}  · ${next}`);
+    this.render();
+  },
+
+  render(): void {
+    const cur = this.current;
+    $("[data-current]").textContent = `${cur} · ${BOARD_LABEL[cur]}`;
+    for (const g of document.querySelectorAll<SVGGElement>("[data-machine] .node")) {
+      g.classList.toggle("on", g.dataset.state === cur);
+    }
+    for (const g of document.querySelectorAll<SVGGElement>("[data-machine] .edge")) {
+      g.classList.toggle("live", g.dataset.from === cur);
+    }
+    $("[data-targets]").replaceChildren(
+      ...STATES.filter((st) => st !== cur).map((to) => {
+        const v = classifyTransition(cur, to);
+        return h(
+          "button",
+          {
+            type: "button",
+            class: `target ${v.classification}`,
+            onclick: () => this.attempt(to),
+            title: v.reason,
+          },
+          h("span", {}, `→ ${to}`),
+          h("span", { class: "tag-sm" }, v.classification),
+        );
+      }),
+    );
+  },
+};
+
+// ── §04 lint ─────────────────────────────────────────────────────────────────
+
+const lint = {
+  init(): void {
+    const input = $<HTMLTextAreaElement>("[data-lint-input]");
+    input.value = SAMPLE_TASK;
+    input.addEventListener("input", () => this.run());
+    input.addEventListener("keydown", (e) => {
+      if (e.key !== "Tab" || e.shiftKey) return;
+      e.preventDefault();
+      input.setRangeText("  ", input.selectionStart, input.selectionEnd, "end");
+      this.run();
+    });
+    $("[data-lint-file]").addEventListener("input", () => this.run());
+    $("[data-lint-prev]").addEventListener("change", () => this.run());
+    $("[data-lint-reset]").addEventListener("click", () => {
+      input.value = SAMPLE_TASK;
+      $<HTMLSelectElement>("[data-lint-prev]").value = "in_progress";
+      this.run();
+    });
+    this.run();
+  },
+
+  run(): void {
+    const text = $<HTMLTextAreaElement>("[data-lint-input]").value;
+    const file = $<HTMLInputElement>("[data-lint-file]").value.trim() || "task.md";
+    const prev = $<HTMLSelectElement>("[data-lint-prev]").value;
+    const result = lintTask(text, {
+      fileName: file,
+      previous: isState(prev) ? prev : undefined,
+      guideVersion,
+    });
+    const errors = result.diagnostics.filter((d) => d.severity === "error").length;
+    const warnings = result.diagnostics.filter((d) => d.severity === "warning").length;
+    const summary = $("[data-lint-summary]");
+    summary.className = errors ? "bad" : warnings ? "warn" : "good";
+    summary.textContent =
+      errors || warnings ? `${errors} error(s), ${warnings} warning(s)` : "structure valid";
+    const out = $("[data-lint-out]");
+    out.replaceChildren(
+      ...result.diagnostics.map((d) =>
+        h(
+          "li",
+          { class: d.severity },
+          h("span", { class: "loc" }, `${file}:${d.line}`),
+          h("span", { class: "sev" }, d.severity),
+          h("span", { class: "msg" }, inline(d.message)),
+          h("span", { class: "rule" }, d.rule),
+        ),
+      ),
+    );
+    if (result.diagnostics.length === 0) {
+      out.append(
+        h(
+          "li",
+          { class: "ok" },
+          h("span", { class: "msg" }, "No structural findings. Scope still needs review."),
+        ),
+      );
+    }
+  },
+};
+
+// ── §05 publication ──────────────────────────────────────────────────────────
+
+function renderPublication(): void {
+  const form = $<HTMLFormElement>("[data-changes]");
+  const groups = [...new Set(CHANGES.map((c) => c.group))];
+  form.replaceChildren(
+    ...groups.map((g) =>
+      h(
+        "fieldset",
+        {},
+        h("legend", { class: "label" }, g),
+        ...CHANGES.filter((c) => c.group === g).map((c) =>
+          h(
+            "label",
+            { class: "check change", title: c.note },
+            h("input", { type: "checkbox", name: c.id }),
+            h("span", {}, c.label),
+            h("span", { class: `dot ${c.classification}`, "aria-label": c.classification }),
+          ),
+        ),
+      ),
+    ),
+  );
+  const presets: readonly (readonly [string, readonly string[]])[] = [
+    ["code + progress", ["code", "progress", "submit"]],
+    ["code + completion", ["code", "complete"]],
+    ["completion only", ["complete"]],
+    ["rules + dependent task", ["rules", "depends"]],
+  ];
+  form.append(
+    h(
+      "div",
+      { class: "presets" },
+      h("span", { class: "label" }, "try"),
+      ...presets.map(([name, ids]) =>
+        h(
+          "button",
+          {
+            type: "button",
+            class: "ghost",
+            onclick: () => {
+              for (const el of form.querySelectorAll<HTMLInputElement>("input"))
+                el.checked = ids.includes(el.name);
+              update();
+            },
+          },
+          name,
+        ),
+      ),
+    ),
+  );
+  const out = $("[data-verdict]");
+  const update = () => {
+    const ids = [...form.querySelectorAll<HTMLInputElement>("input:checked")].map((i) => i.name);
+    const v = classifyCandidate(ids);
+    if (!v) {
+      out.replaceChildren(
+        h("p", { class: "label" }, "verdict"),
+        h("p", { class: "muted" }, "Select the changes in the candidate."),
+      );
+      return;
+    }
+    const notes = CHANGES.filter((c) => ids.includes(c.id));
+    out.replaceChildren(
+      h("p", { class: "label" }, "verdict"),
+      h("p", {}, h("span", { class: `tag ${v.classification}` }, v.classification)),
+      h("p", { class: "path" }, v.path),
+      h("p", { class: "label" }, "required"),
+      h("ul", {}, ...v.steps.map((st) => h("li", {}, st))),
+      h("p", { class: "label" }, "per change"),
+      h(
+        "ul",
+        { class: "notes" },
+        ...notes.map((c) =>
+          h("li", {}, h("span", { class: `dot ${c.classification}` }), `${c.label}: ${c.note}`),
+        ),
+      ),
+    );
+  };
+  form.addEventListener("change", update);
+  update();
+}
+
+// ── §06 activities ───────────────────────────────────────────────────────────
+
+function renderActivities(): void {
+  const tabs = $("[data-tabs]");
+  const body = $("[data-tab-body]");
+  const select = (i: number, focus = false) => {
+    const a = ACTIVITIES[i];
+    if (!a) return;
+    for (const [j, b] of tabs.querySelectorAll<HTMLButtonElement>("button").entries()) {
+      b.setAttribute("aria-selected", String(j === i));
+      b.tabIndex = j === i ? 0 : -1;
+      if (j === i && focus) b.focus();
+    }
+    body.replaceChildren(
+      h("p", { class: "lede-sm" }, a.summary),
+      h("ol", { class: "steps" }, ...a.steps.map((st) => h("li", {}, inline(st)))),
+      h("p", { class: "note" }, a.note),
+    );
+  };
+  tabs.replaceChildren(
+    ...ACTIVITIES.map((a, i) =>
+      h(
+        "button",
+        {
+          type: "button",
+          role: "tab",
+          id: `tab-${a.id}`,
+          onclick: () => select(i),
+          onkeydown: (e: Event) => {
+            const k = (e as KeyboardEvent).key;
+            const d = k === "ArrowRight" ? 1 : k === "ArrowLeft" ? -1 : 0;
+            if (d) select((i + d + ACTIVITIES.length) % ACTIVITIES.length, true);
+          },
+        },
+        h("span", { class: "n" }, String(i + 1).padStart(2, "0")),
+        a.name,
+      ),
+    ),
+  );
+  select(0);
+}
+
+// ── §07 startup & versioning ─────────────────────────────────────────────────
+
+const reading = {
+  init(): void {
+    $("[data-startup]").replaceChildren(...STARTUP.map((st) => h("li", {}, inline(st))));
+    for (const sel of [
+      "[data-read-known]",
+      "[data-read-current]",
+      "[data-read-content]",
+      "[data-read-diff]",
+    ]) {
+      $(sel).addEventListener("input", () => this.run());
+    }
+    $<HTMLInputElement>("[data-read-known]").value = "2.0.0";
+    this.run();
+  },
+  run(): void {
+    const known = $<HTMLInputElement>("[data-read-known]").value.trim();
+    const current = $<HTMLInputElement>("[data-read-current]").value.trim() || guideVersion;
+    const out = $("[data-read-out]");
+    if (!isSemver(current)) {
+      out.replaceChildren(
+        h("span", { class: "tag invalid" }, "input"),
+        " Current version must be MAJOR.MINOR.PATCH.",
+      );
+      return;
+    }
+    const v = readingRule({
+      known: known || undefined,
+      current,
+      contentChanged: $<HTMLInputElement>("[data-read-content]").checked,
+      diffAvailable: $<HTMLInputElement>("[data-read-diff]").checked,
+    });
+    const label = {
+      full: "read full guide",
+      diff: "read guide diff",
+      "content-diff": "read content diff",
+      none: "no re-read",
+    };
+    out.replaceChildren(
+      h(
+        "span",
+        { class: `tag ${v.action === "full" ? "approval-sensitive" : "routine"}` },
+        label[v.action],
+      ),
+      " ",
+      v.reason,
+    );
+  },
+};
+
+const bump = {
+  init(): void {
+    const form = $<HTMLFormElement>("[data-impacts]");
+    form.replaceChildren(
+      ...IMPACTS.map((i) =>
+        h(
+          "label",
+          { class: "check" },
+          h("input", { type: "checkbox", name: i.id }),
+          h("span", {}, i.label),
+          h("span", { class: "tag-sm" }, i.bump),
+        ),
+      ),
+    );
+    form.addEventListener("change", () => this.run());
+    this.run();
+  },
+  run(): void {
+    const ids = [
+      ...$<HTMLFormElement>("[data-impacts]").querySelectorAll<HTMLInputElement>("input:checked"),
+    ].map((i) => i.name);
+    const b = selectBump(ids);
+    const out = $("[data-bump-out]");
+    if (!b) {
+      out.replaceChildren(
+        h("span", { class: "muted" }, `v${guideVersion} → select at least one impact`),
+      );
+      return;
+    }
+    out.replaceChildren(
+      h("code", {}, `v${guideVersion} → v${applyBump(guideVersion, b)}`),
+      " ",
+      h(
+        "span",
+        {
+          class: `tag ${b === "major" ? "invalid" : b === "minor" ? "approval-sensitive" : "routine"}`,
+        },
+        b,
+      ),
+      " The version number does not approve the change.",
+    );
+  },
+};
+
+// ── §08 adoption ─────────────────────────────────────────────────────────────
+
+function renderAdoption(): void {
+  const KEY = "aad.adopt";
+  let done: number[] = [];
+  try {
+    done = JSON.parse(store.get(KEY) ?? "[]") as number[];
+  } catch {
+    done = [];
+  }
+  const list = $("[data-adopt]");
+  const bar = $("[data-adopt-bar]");
+  const update = () => {
+    const boxes = [...list.querySelectorAll<HTMLInputElement>("input")];
+    done = boxes.flatMap((b, i) => (b.checked ? [i] : []));
+    store.set(KEY, JSON.stringify(done));
+    bar.style.width = `${(done.length / ADOPTION.length) * 100}%`;
+    bar.dataset.label = `${done.length}/${ADOPTION.length}`;
+  };
+  list.replaceChildren(
+    ...ADOPTION.map((step, i) =>
+      h(
+        "li",
+        {},
+        h(
+          "label",
+          { class: "check" },
+          h("input", { type: "checkbox", checked: done.includes(i), onchange: update }),
+          h("span", { class: "n" }, String(i + 1).padStart(2, "0")),
+          h("span", {}, inline(step)),
+        ),
+      ),
+    ),
+  );
+  update();
+
+  const filter = $<HTMLInputElement>("[data-case-filter]");
+  const cases = $("[data-cases]");
+  const render = () => {
+    const q = filter.value.trim().toLowerCase();
+    const rows = CASES.filter(([c, r]) => !q || `${c} ${r}`.toLowerCase().includes(q));
+    cases.replaceChildren(
+      ...rows.map(([c, r]) =>
+        h("li", {}, h("p", {}, inline(c)), h("p", { class: "res" }, "⟶ ", inline(r))),
+      ),
+    );
+    if (rows.length === 0) cases.append(h("li", { class: "muted" }, "No matching case."));
+  };
+  filter.addEventListener("input", render);
+  render();
+}
+
+// ── chrome ───────────────────────────────────────────────────────────────────
+
+function initChrome(): void {
+  const root = document.documentElement;
+  const saved = store.get("aad.theme");
+  if (saved === "light" || saved === "dark") root.dataset.theme = saved;
+  $("[data-theme-toggle]").addEventListener("click", () => {
+    const dark = root.dataset.theme
+      ? root.dataset.theme === "dark"
+      : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    store.set("aad.theme", root.dataset.theme);
+  });
+  for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+    btn.addEventListener("click", async () => {
+      const src = document.querySelector(btn.dataset.copy ?? "");
+      try {
+        await navigator.clipboard.writeText(src?.textContent ?? "");
+        btn.textContent = "copied";
+      } catch {
+        btn.textContent = "select + copy";
+      }
+      setTimeout(() => {
+        btn.textContent = "copy";
+      }, 1400);
+    });
+  }
+}
+
+initChrome();
+renderVersion();
+renderRules();
+renderTree();
+machine.init();
+lint.init();
+renderPublication();
+renderActivities();
+reading.init();
+bump.init();
+renderAdoption();
+void loadSpec();
