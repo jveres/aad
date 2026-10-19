@@ -471,7 +471,7 @@ export const WORKING_REFERENCE: readonly (readonly [string, string, string, stri
 export const SAMPLE_TASK = `---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.2.0
+aad_version: 2.2.1
 ---
 
 ## Goal
@@ -489,5 +489,5 @@ Keyboard testing has not run.
 Test keyboard navigation.
 
 ## References
-- [UI requirements](../ui-requirements.md)
+- [UI requirements](../requirements/ui.md)
 `;

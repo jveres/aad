@@ -31,7 +31,7 @@ interface Spec {
   readonly latest: { readonly version: string; readonly items: readonly string[] } | undefined;
 }
 
-let guideVersion = "2.2.0";
+let guideVersion = "2.2.1";
 
 // ── spec ─────────────────────────────────────────────────────────────────────
 

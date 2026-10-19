@@ -190,7 +190,7 @@ jobs:
 
 Start with [AGENTS.md](../AGENTS.md). Each topic has one accepted source.
 
-- [Working process](aad.md): AAD 2.2.0
+- [Working process](aad.md): AAD 2.2.1
 - [Requirements](requirements.md) and [behavior details](requirements/)
 - [Architecture](architecture.md)
 - [Engineering](engineering.md): setup, checks, approvals, publication
@@ -203,7 +203,7 @@ Start with [AGENTS.md](../AGENTS.md). Each topic has one accepted source.
     file: "wiki/aad.md",
     fromSpec: false,
     text: `---
-version: 2.2.0
+version: 2.2.1
 ---
 
 # AAD: Agent-Assisted Development
@@ -217,7 +217,7 @@ version: 2.2.0
 …
 ## Latest Change
 
-2.2.0
+2.2.1
 `,
   },
   "requirements.md": {
@@ -438,7 +438,7 @@ Keyboard testing has not run.
 Test keyboard navigation.
 
 ## References
-- [UI requirements](../ui-requirements.md)
+- [UI requirements](../requirements/ui.md)
 `,
   },
 };

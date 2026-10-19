@@ -1,5 +1,5 @@
 ---
-version: 2.2.0
+version: 2.2.1
 ---
 
 # AAD: Agent-Assisted Development
@@ -284,9 +284,10 @@ At startup and before selecting unrelated implementation, inspect the shared
 tasks in `review`. Present unresolved acceptance decisions and apply the project's
 pending-review limit. Engineering guidance sets that limit and its scope; the
 default is one task awaiting acceptance per project. A higher limit allows
-explicitly deferred reviews to coexist, not silent deferral. Starting work that
-would exceed the limit requires an explicit exception from the approval
-authority, recorded with the reason and return condition in the affected tasks.
+explicitly deferred reviews to coexist, not silent deferral. Starting unrelated
+implementation that would exceed the limit requires an explicit exception from
+the approval authority, recorded with the reason and return condition in the
+affected tasks.
 Existing records remain valid; apply this selection rule to future work.
 
 The selection rule and the pending-review limit are separate controls.
@@ -384,7 +385,7 @@ Keyboard testing has not run.
 Test keyboard navigation.
 
 ## References
-- [UI requirements](../ui-requirements.md)
+- [UI requirements](../requirements/ui.md)
 ```
 
 Required header fields:
@@ -433,7 +434,7 @@ stateDiagram-v2
     [*] --> review: Submit existing result for review
     [*] --> done: Record approved completed work
     todo --> in_progress: Start work
-    in_progress --> todo: Return to backlog
+    in_progress --> todo: Discard all work
     in_progress --> review: Submit result
     review --> todo: Discard all work
     review --> in_progress: Request more work
@@ -607,7 +608,7 @@ alone must not trigger completion.
 
 Every proposed merge that adds, modifies, renames, or deletes a path under
 `wiki/tasks/` must run trusted task-publication checks. Inspect both old and new
-paths for a rename. The trigger depends on the actual change, not the branch
+paths to reject a rename. The trigger depends on the actual change, not the branch
 name, pull-request label, or selected workflow. Apply the checks to every
 permitted publication path, including an authorized bypass.
 
@@ -1475,27 +1476,16 @@ Add documents and tools when repeated work shows a need.
 
 ## Latest Change
 
-2.2.0
+2.2.1
 
-- Define acceptance as authorized completion approval and distinguish it from
-  review recommendations and semantic classification.
-- Clarify the pending-review gate, its implementation scope, and the separate
-  requirements for deferral and limit exceptions.
-- Clarify publication of accepted behavior changes and recording of unaccepted
-  proposals without changing task scope.
-- Resolve backlog-return ambiguity and explicitly preserve allocated task IDs.
-- Add a linked working reference and a compact acceptance-handoff template.
-- Require a documented local mechanical task-check command. Recommend
-  regression fixtures for mechanically testable adoption cases.
-- Support automated task-only completion publication without changing approval
-  or publication requirements.
-- Clarify version classification for task-selection constraints and relocate
-  the historical AAD 2.0 migration instruction.
-- Update the task example and adoption decision cases.
+- Label the `in_progress → todo` diagram edge "Discard all work" to match the
+  transition table. Paused work with retained progress stays `in_progress`.
+- Apply the pending-review limit exception to starting unrelated
+  implementation, consistent with the scope of the acceptance gate.
+- Point the task example's `References` link to `../requirements/ui.md`, a
+  path in the repository layout.
+- State that task-path validation inspects both paths of a rename to reject it.
 
-This minor release adds prospective guidance and checks within the existing
-record format, lifecycle, approval authority, and publication model. Existing
-valid task records and accepted decisions remain valid; no record migration is
-required. Projects must update applicable instructions and task-ID validation
-before relying on the new checks. Publish guidance and validator changes before
-task edits that depend on them.
+This patch release corrects wording, a diagram label, and an example link to
+match the accepted 2.2.0 rules. Required behavior, records, lifecycle,
+approvals, and publication are unchanged.
