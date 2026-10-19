@@ -1,5 +1,3 @@
-import { register, render } from "pele/core";
-import stateDiagram from "pele/diagrams/state";
 import {
   ACTIVITIES,
   ADOPTION,
@@ -10,7 +8,7 @@ import {
   TREE,
   WORKING_REFERENCE,
 } from "./content.js";
-import { $, h, inline, store } from "./dom.js";
+import { $, h, inline, s, store } from "./dom.js";
 import {
   BOARD_LABEL,
   CREATION,
@@ -30,7 +28,6 @@ const REPO = "jveres/aad";
 interface Spec {
   readonly version: string;
   readonly latest: { readonly version: string; readonly items: readonly string[] } | undefined;
-  readonly diagram: string | undefined;
 }
 
 let guideVersion = "2.2.0";
@@ -41,15 +38,14 @@ export function parseSpec(text: string): Spec | undefined {
   const version = /^---\r?\n(?:.*\r?\n)*?version:\s*(\d+\.\d+\.\d+)/m.exec(text)?.[1];
   if (!version) return undefined;
   const tail = text.split(/^## Latest Change\s*$/m)[1];
-  const diagram = lifecycleSource(text);
-  if (!tail) return { version, latest: undefined, diagram };
+  if (!tail) return { version, latest: undefined };
   const lines = tail.trim().split(/\r?\n/);
   const items: string[] = [];
   for (const line of lines.slice(1)) {
     if (/^-\s+/.test(line)) items.push(line.replace(/^-\s+/, ""));
     else if (line.trim() && items.length > 0) items[items.length - 1] += ` ${line.trim()}`;
   }
-  return { version, latest: { version: lines[0]?.trim() ?? version, items }, diagram };
+  return { version, latest: { version: lines[0]?.trim() ?? version, items } };
 }
 
 async function loadSpec(): Promise<void> {
@@ -66,11 +62,9 @@ async function loadSpec(): Promise<void> {
       h("p", { class: "muted" }, "Could not read aad.md. See the spec on GitHub."),
     );
     renderVersion();
-    machine.draw();
     return;
   }
   guideVersion = spec.version;
-  machine.draw(spec.diagram ?? "");
   renderVersion();
   if (spec.latest) {
     log.replaceChildren(
@@ -192,98 +186,71 @@ function renderTree(): void {
 
 // ── §03 lifecycle ────────────────────────────────────────────────────────────
 
-register(stateDiagram);
+const NODE_X: Record<State, number> = { todo: 100, in_progress: 310, review: 520, done: 720 };
+const NODE_Y = 130;
 
-interface DiagramEdge {
-  readonly from: State | "start";
-  readonly to: State;
-}
-
-/** The lifecycle diagram source from aad.md §5 "States". */
-export function lifecycleSource(md: string): string | undefined {
-  return /```mermaid\r?\n(stateDiagram(?:-v2)?\r?\n[\s\S]*?)```/.exec(md)?.[1];
-}
-
-/** Transitions in source order; Pele numbers its edges `edge0…` in the same order. */
-function diagramEdges(source: string): (DiagramEdge | undefined)[] {
-  return [...source.matchAll(/^\s*(\[\*\]|\w+)\s*-->\s*(\w+)/gm)].map(([, from = "", to = ""]) => {
-    if (!isState(to)) return undefined;
-    if (from === "[*]") return { from: "start", to };
-    return isState(from) ? { from, to } : undefined;
-  });
-}
-
-function edgeClass(edge: DiagramEdge): string {
-  if (edge.from === "start") {
-    const c = CREATION.find((x) => x.status === edge.to);
-    return `creation ${c?.classification ?? "routine"}`;
-  }
-  return classifyTransition(edge.from, edge.to).classification;
+function edgePath(from: State, to: State): { d: string; lx: number; ly: number } {
+  const x1 = NODE_X[from];
+  const x2 = NODE_X[to];
+  const dir = Math.sign(x2 - x1);
+  const span = Math.abs(x2 - x1);
+  const long = span > 250;
+  const above =
+    (dir > 0 && !(from === "review" && to === "todo")) || (from === "done" && to === "in_progress");
+  const off = long ? 14 : 36;
+  const y0 = above ? NODE_Y - 22 : NODE_Y + 22;
+  const lift = long ? 78 : 44;
+  const cy = above ? y0 - lift * 2 : y0 + lift * 2;
+  const sx = x1 + dir * off;
+  const ex = x2 - dir * off;
+  return {
+    d: `M ${sx} ${y0} Q ${(sx + ex) / 2} ${cy} ${ex} ${y0}`,
+    lx: (sx + ex) / 2,
+    ly: (y0 + cy) / 2 + (above ? -6 : 14),
+  };
 }
 
 const machine = {
   current: "todo" as State,
   steps: 0,
-  source: undefined as string | undefined,
-  width: 0,
 
   init(): void {
-    $("[data-reset]").addEventListener("click", () => this.reset());
-    const host = $("[data-machine]");
-    let timer = 0;
-    new ResizeObserver(() => {
-      clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        if (Math.abs(host.clientWidth - this.width) > 24) this.draw();
-      }, 120);
-    }).observe(host);
-    this.reset();
-  },
-
-  /** Renders the spec's state diagram with Pele, then wires the states for interaction. */
-  draw(source?: string): void {
-    if (source !== undefined) this.source = source;
-    const host = $("[data-machine]");
-    if (!this.source) {
-      host.replaceChildren(
-        h("p", { class: "muted" }, "Diagram unavailable: could not read aad.md."),
+    const svg = $<SVGSVGElement>("[data-machine]");
+    const defs = s("defs");
+    for (const cls of ["routine", "approval-sensitive"]) {
+      const m = s("marker", {
+        id: `arrow-${cls}`,
+        viewBox: "0 0 10 10",
+        refX: 9,
+        refY: 5,
+        markerWidth: 7,
+        markerHeight: 7,
+        orient: "auto-start-reverse",
+      });
+      m.append(s("path", { d: "M0,0 L10,5 L0,10 z", class: `arrow ${cls}` }));
+      defs.append(m);
+    }
+    svg.append(defs);
+    for (const t of TRANSITIONS) {
+      const g = s("g", { class: `edge ${t.classification}`, "data-from": t.from, "data-to": t.to });
+      const p = edgePath(t.from, t.to);
+      g.append(
+        s("path", { d: p.d, "marker-end": `url(#arrow-${t.classification})` }),
+        s(
+          "text",
+          { x: p.lx, y: p.ly, "text-anchor": "middle" },
+          t.classification === "routine" ? "" : "approval",
+        ),
       );
-      return;
+      svg.append(g);
     }
-    this.width = host.clientWidth;
-    let svg: string;
-    try {
-      svg = render(this.source.replace(/^(stateDiagram(?:-v2)?)\s*$/m, "$1\n    direction LR"), {
-        idPrefix: "lifecycle",
-        fontFamily: getComputedStyle(document.documentElement).getPropertyValue("--mono").trim(),
-        fontSize: 13,
-        maxWidth: this.width,
-        padding: 12,
-        // Below Pele's vertical breakpoint, keep natural size and let the panel scroll.
-        responsive: this.width >= 640,
-      }).svg;
-    } catch (err) {
-      host.replaceChildren(h("p", { class: "muted" }, `Diagram error: ${String(err)}`));
-      return;
-    }
-    const el = document.importNode(
-      new DOMParser().parseFromString(svg, "image/svg+xml").documentElement,
-      true,
-    );
-    const edges = diagramEdges(this.source);
-    for (const g of el.querySelectorAll<SVGGElement>(".pele-edge, .pele-edge-label")) {
-      const edge = edges[Number(g.dataset.id?.replace("edge", ""))];
-      if (!edge) continue;
-      g.dataset.from = edge.from;
-      g.dataset.to = edge.to;
-      g.classList.add(...edgeClass(edge).split(" "));
-    }
-    for (const g of el.querySelectorAll<SVGGElement>(".pele-node.pele-state")) {
-      const st = g.dataset.id ?? "";
-      if (!isState(st)) continue;
-      g.setAttribute("tabindex", "0");
-      g.setAttribute("role", "button");
+    for (const st of STATES) {
+      const g = s("g", { class: "node", "data-state": st, tabindex: 0, role: "button" });
       g.setAttribute("aria-label", `${BOARD_LABEL[st]}: ${STATE_MEANING[st]}`);
+      g.append(
+        s("rect", { x: NODE_X[st] - 70, y: NODE_Y - 22, width: 140, height: 44, rx: 4 }),
+        s("text", { x: NODE_X[st], y: NODE_Y + 5, "text-anchor": "middle" }, st),
+      );
       g.addEventListener("click", () => this.attempt(st));
       g.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -291,9 +258,10 @@ const machine = {
           this.attempt(st);
         }
       });
+      svg.append(g);
     }
-    host.replaceChildren(el);
-    this.render();
+    $("[data-reset]").addEventListener("click", () => this.reset());
+    this.reset();
   },
 
   reset(): void {
@@ -349,14 +317,10 @@ const machine = {
   render(): void {
     const cur = this.current;
     $("[data-current]").textContent = `${cur} · ${BOARD_LABEL[cur]}`;
-    for (const g of document.querySelectorAll<SVGGElement>(
-      "[data-machine] .pele-node.pele-state",
-    )) {
-      g.classList.toggle("on", g.dataset.id === cur);
+    for (const g of document.querySelectorAll<SVGGElement>("[data-machine] .node")) {
+      g.classList.toggle("on", g.dataset.state === cur);
     }
-    for (const g of document.querySelectorAll<SVGGElement>(
-      "[data-machine] .pele-edge, [data-machine] .pele-edge-label",
-    )) {
+    for (const g of document.querySelectorAll<SVGGElement>("[data-machine] .edge")) {
       g.classList.toggle("live", g.dataset.from === cur);
     }
     $("[data-targets]").replaceChildren(

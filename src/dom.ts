@@ -19,6 +19,19 @@ export function h<K extends keyof HTMLElementTagNameMap>(
   return el;
 }
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+export function s(
+  tag: string,
+  attrs: Record<string, string | number> = {},
+  text?: string,
+): SVGElement {
+  const el = document.createElementNS(SVG_NS, tag) as SVGElement;
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
+  if (text !== undefined) el.textContent = text;
+  return el;
+}
+
 /** Renders `code` spans written with backticks. */
 export function inline(text: string): DocumentFragment {
   const frag = document.createDocumentFragment();

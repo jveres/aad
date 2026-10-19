@@ -224,16 +224,14 @@ establishes which guide revision it read earlier:
 
 ## The website
 
-`public/` is a static site that makes no external requests. It fetches `aad.md`
-next to itself, so the version, the latest change, and the lifecycle diagram
-come from the spec (core rule 1). The diagram is the spec's Mermaid
-`stateDiagram-v2` block, rendered to SVG in the browser by
-[Pele](https://pele.run) and themed with the page's CSS variables.
+`public/` is a static site with no runtime dependencies and no external requests.
+It fetches `aad.md` next to itself, so the version and the latest change come
+from the spec (core rule 1).
 
 | Section | What you can do |
 |---|---|
 | §02 Repository | Explore the layout and the accepted source for each path |
-| §03 Lifecycle | Drive a task through the spec's state diagram; see routine, approval-gated, and rejected transitions |
+| §03 Lifecycle | Drive a task through the state machine; see routine, approval-gated, and rejected transitions |
 | §04 Linter | Edit a task file and get live diagnostics (header, sections, `Next`, transitions, dependencies, version) |
 | §05 Publication | Compose a pull request and see its classification and publication path |
 | §06 Activities | Step through each development activity |
@@ -251,14 +249,13 @@ Requirements: Node.js 22 or later.
 |---|---|---|
 | [TypeScript](https://www.typescriptlang.org/) | 7.0.2 (native compiler) | Type checking and compiling `src/` to ES modules in `public/js/` |
 | [Biome](https://biomejs.dev/) | 2.5.15 | Formatting and linting for TS, JS, CSS, HTML, and JSON |
-| [Pele](https://pele.run) | 1.6.0 | Renders the spec's Mermaid state diagram to SVG (the only runtime dependency, vendored into `public/vendor/` at build) |
 
 ```sh
 npm ci
 npm run serve        # build, then serve public/ at http://localhost:8080
 npm run check        # version consistency + biome + tsc --noEmit
 npm run format       # apply biome fixes and formatting
-npm run build        # tsc → public/js, copy aad.md → public/, vendor Pele → public/vendor/
+npm run build        # tsc → public/js, copy aad.md → public/
 ```
 
 ```text
