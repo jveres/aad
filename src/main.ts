@@ -117,6 +117,31 @@ function renderReference(): void {
 
 // ── §02 repository ───────────────────────────────────────────────────────────
 
+/** True when no later sibling follows TREE[i] before its parent's subtree ends. */
+function isLastChild(i: number): boolean {
+  const depth = TREE[i]?.depth ?? 0;
+  for (let j = i + 1; j < TREE.length; j++) {
+    const d = TREE[j]?.depth ?? 0;
+    if (d < depth) return true;
+    if (d === depth) return false;
+  }
+  return true;
+}
+
+/** Guide segments for a row, like `tree`: pipe or blank per ancestor level, then tee or elbow. */
+function treeGuides(i: number): ("pipe" | "blank" | "tee" | "elbow")[] {
+  const depth = TREE[i]?.depth ?? 0;
+  if (depth === 0) return [];
+  const guides: ("pipe" | "blank" | "tee" | "elbow")[] = [];
+  for (let level = 1; level < depth; level++) {
+    let ancestor = i;
+    while ((TREE[ancestor]?.depth ?? 0) !== level) ancestor--;
+    guides.push(isLastChild(ancestor) ? "blank" : "pipe");
+  }
+  guides.push(isLastChild(i) ? "elbow" : "tee");
+  return guides;
+}
+
 function renderTree(): void {
   const list = $("[data-tree]");
   const detail = $("[data-tree-detail]");
@@ -139,13 +164,13 @@ function renderTree(): void {
     ...TREE.map((node, i) =>
       h(
         "li",
-        { style: `--d:${node.depth}` },
+        {},
         h(
           "button",
           { type: "button", "aria-pressed": "false", onclick: () => select(i) },
-          h("span", { class: "branch" }, node.depth === 0 ? "" : "├─ "),
-          node.name,
-          node.optional ? h("span", { class: "muted" }, "  ?") : null,
+          ...treeGuides(i).map((g) => h("span", { class: `guide ${g}`, "aria-hidden": "true" })),
+          h("span", { class: "name" }, node.name),
+          node.optional ? h("span", { class: "muted" }, "?") : null,
         ),
       ),
     ),
