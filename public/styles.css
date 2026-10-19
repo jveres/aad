@@ -657,15 +657,15 @@ main {
 }
 
 /* Tree guides: each segment is one indent column; lines touch across rows. */
-.tree .guide {
+.guide {
   position: relative;
   flex: none;
   width: 22px;
   color: var(--muted);
 }
 
-.tree .guide::before,
-.tree .guide::after {
+.guide::before,
+.guide::after {
   content: "";
   position: absolute;
   left: 7px;
@@ -674,21 +674,21 @@ main {
   border-width: 0;
 }
 
-.tree .pipe::before,
-.tree .tee::before {
+.guide.pipe::before,
+.guide.tee::before {
   top: 0;
   bottom: 0;
   border-left-width: 1px;
 }
 
-.tree .elbow::before {
+.guide.elbow::before {
   top: 0;
   height: 50%;
   border-left-width: 1px;
 }
 
-.tree .tee::after,
-.tree .elbow::after {
+.guide.tee::after,
+.guide.elbow::after {
   top: 50%;
   width: 10px;
   border-top-width: 1px;
@@ -736,6 +736,33 @@ main {
   overflow-wrap: anywhere;
   max-height: 360px;
   overflow-y: auto;
+}
+
+[data-tree-detail] .tree-sample {
+  font-family: var(--mono);
+  white-space: nowrap;
+  overflow-x: auto;
+  line-height: 1;
+}
+
+.tree-sample .line {
+  display: flex;
+  align-items: stretch;
+  height: 20px;
+}
+
+.tree-sample .guide {
+  width: 20px;
+}
+
+.tree-sample .name,
+.tree-sample .comment {
+  align-self: center;
+}
+
+.tree-sample .comment {
+  margin-left: 2ch;
+  color: var(--muted);
 }
 
 [data-tree-detail] .sample code,

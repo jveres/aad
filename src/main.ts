@@ -130,10 +130,10 @@ function isLastChild(i: number): boolean {
 }
 
 /** Guide segments for a row, like `tree`: pipe or blank per ancestor level, then tee or elbow. */
-function treeGuides(i: number): ("pipe" | "blank" | "tee" | "elbow")[] {
+function treeGuides(i: number): Guide[] {
   const depth = TREE[i]?.depth ?? 0;
   if (depth === 0) return [];
-  const guides: ("pipe" | "blank" | "tee" | "elbow")[] = [];
+  const guides: Guide[] = [];
   for (let level = 1; level < depth; level++) {
     let ancestor = i;
     while ((TREE[ancestor]?.depth ?? 0) !== level) ancestor--;
@@ -141,6 +141,56 @@ function treeGuides(i: number): ("pipe" | "blank" | "tee" | "elbow")[] {
   }
   guides.push(isLastChild(i) ? "elbow" : "tee");
   return guides;
+}
+
+type Guide = "pipe" | "blank" | "tee" | "elbow";
+
+const GUIDE_TEXT: Record<string, Guide> = {
+  "│   ": "pipe",
+  "    ": "blank",
+  "├── ": "tee",
+  "└── ": "elbow",
+};
+
+/** Splits a `tree`-style line into guide segments and the rest, or `undefined` if it is not one. */
+function parseTreeLine(line: string): { guides: Guide[]; rest: string } | undefined {
+  const guides: Guide[] = [];
+  let i = 0;
+  while (i < line.length) {
+    const g = GUIDE_TEXT[line.slice(i, i + 4)];
+    if (!g) break;
+    guides.push(g);
+    i += 4;
+    if (g === "tee" || g === "elbow") break;
+  }
+  const last = guides.at(-1);
+  return last === "tee" || last === "elbow" ? { guides, rest: line.slice(i) } : undefined;
+}
+
+/** Renders text trees with drawn guide lines, so lines connect at any line height. */
+function renderSample(text: string): HTMLElement {
+  const lines = text.replace(/\n$/, "").split("\n");
+  const [root = "", ...rest] = lines;
+  const parsed = rest.map(parseTreeLine);
+  if (rest.length === 0 || /^[│├└ ]/.test(root) || parsed.some((p) => !p)) {
+    return h("pre", { class: "sample" }, h("code", {}, text));
+  }
+  const row = (guides: Guide[], body: string) => {
+    const [name = "", note] = body.split(/\s+(?=#)/, 2);
+    return h(
+      "div",
+      { class: "line" },
+      ...guides.map((g) => h("span", { class: `guide ${g}`, "aria-hidden": "true" })),
+      h("span", { class: "name" }, name),
+      note ? h("span", { class: "comment" }, note) : null,
+    );
+  };
+  return h(
+    "div",
+    { class: "sample tree-sample" },
+    row([], root),
+    ...parsed.map((p) => row(p?.guides ?? [], p?.rest ?? "")),
+  );
 }
 
 function renderTree(): void {
@@ -167,7 +217,7 @@ function renderTree(): void {
               { class: "label" },
               `example · ${sample.file} · ${sample.fromSpec ? "from aad.md" : "illustrative"}`,
             ),
-            h("pre", { class: "sample" }, h("code", {}, sample.text)),
+            renderSample(sample.text),
           ]
         : []),
     );
