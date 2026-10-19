@@ -266,6 +266,12 @@ function edgePath(from: State, to: State): { d: string; lx: number; ly: number }
   };
 }
 
+/** Labels for the approval-gated arcs; routine arcs stay unlabeled. */
+const EDGE_LABEL: Record<string, string> = {
+  "review>done": "complete · approval",
+  "done>in_progress": "reopen · approval",
+};
+
 const machine = {
   current: "todo" as State,
   steps: 0,
@@ -295,7 +301,7 @@ const machine = {
         s(
           "text",
           { x: p.lx, y: p.ly, "text-anchor": "middle" },
-          t.classification === "routine" ? "" : "approval",
+          EDGE_LABEL[`${t.from}>${t.to}`] ?? "",
         ),
       );
       svg.append(g);
