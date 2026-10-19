@@ -25,5 +25,8 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "typescript": "7.0.2"
+  },
+  "dependencies": {
+    "pele": "1.6.0"
   }
 }

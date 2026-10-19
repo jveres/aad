@@ -2,3 +2,4 @@ node_modules/
 public/js/
 public/aad.md
 .DS_Store
+public/vendor/

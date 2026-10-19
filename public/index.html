@@ -11,6 +11,14 @@
     <meta name="color-scheme" content="dark light" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "pele/core": "./vendor/pele/core.js",
+          "pele/diagrams/state": "./vendor/pele/diagrams/state.js"
+        }
+      }
+    </script>
     <script type="module" src="js/main.js"></script>
   </head>
   <body>
@@ -104,7 +112,7 @@
           </p>
         </header>
         <div class="machine">
-          <svg data-machine viewBox="0 0 820 260" role="img" aria-label="Task state diagram"></svg>
+          <figure class="diagram" data-machine aria-label="Task state diagram, rendered from aad.md"></figure>
           <div class="machine-ctl">
             <div class="row">
               <span class="label">current</span>

@@ -711,39 +711,67 @@ main {
 }
 
 [data-machine] {
-  display: block;
-  width: 100%;
-  height: auto;
+  margin: 0;
+  min-height: 180px;
+  padding: 8px;
   border-bottom: 1px solid var(--line);
-  font: 13px var(--mono);
+  overflow-x: auto;
 }
 
-.edge path {
-  fill: none;
-  stroke: var(--c);
+/* Pele diagram themed with the page tokens. */
+[data-machine] .pele {
+  display: block;
+  margin: 0 auto;
+  --pele-bg: var(--bg-2);
+  --pele-fg: var(--fg);
+  --pele-muted: var(--muted);
+  --pele-line: var(--line-2);
+  --pele-surface: var(--bg);
+  --pele-surface-alt: var(--bg-3);
+  --pele-border: var(--line-2);
+  --pele-accent: var(--accent);
+  --pele-font: var(--mono);
+  --pele-font-mono: var(--mono);
+}
+
+[data-machine] .creation {
+  --c: var(--muted);
+}
+
+[data-machine] .pele-edge path {
+  stroke: var(--c, var(--line-2));
   stroke-width: 1.5;
-  opacity: 0.28;
+  opacity: 0.35;
   transition:
     opacity 0.2s,
     stroke-width 0.2s;
 }
 
-.edge text {
-  fill: var(--c);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  opacity: 0.35;
+[data-machine] .pele-edge .pele-marker {
+  fill: var(--c, var(--line-2));
+  stroke: none;
 }
 
-.edge.live path {
+[data-machine] .pele-edge-label rect {
+  stroke: none;
+}
+
+[data-machine] .pele-edge-label text {
+  fill: var(--c, var(--muted));
+  opacity: 0.55;
+}
+
+[data-machine] .pele-edge.live path {
   opacity: 1;
   stroke-width: 2;
+}
+
+[data-machine] .pele-edge.live path:not(.pele-marker) {
   stroke-dasharray: 5 4;
   animation: flow 0.8s linear infinite;
 }
 
-.edge.live text {
+[data-machine] .pele-edge-label.live text {
   opacity: 1;
 }
 
@@ -754,24 +782,16 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .edge.live path {
+  [data-machine] .pele-edge.live path {
     animation: none;
   }
 }
 
-.arrow.routine {
-  fill: var(--ok);
-}
-
-.arrow.approval-sensitive {
-  fill: var(--warn);
-}
-
-.node {
+[data-machine] .pele-node.pele-state {
   cursor: pointer;
 }
 
-.node rect {
+[data-machine] .pele-node.pele-state rect {
   fill: var(--bg);
   stroke: var(--line-2);
   stroke-width: 1.5;
@@ -780,25 +800,21 @@ main {
     stroke 0.15s;
 }
 
-.node text {
-  fill: var(--fg);
-}
-
-.node:hover rect,
-.node:focus-visible rect {
+[data-machine] .pele-node.pele-state:hover rect,
+[data-machine] .pele-node.pele-state:focus-visible rect {
   stroke: var(--accent);
 }
 
-.node:focus {
+[data-machine] .pele-node.pele-state:focus {
   outline: none;
 }
 
-.node.on rect {
+[data-machine] .pele-node.pele-state.on rect {
   fill: var(--accent);
   stroke: var(--accent);
 }
 
-.node.on text {
+[data-machine] .pele-node.pele-state.on text {
   fill: var(--accent-ink);
   font-weight: 700;
 }
