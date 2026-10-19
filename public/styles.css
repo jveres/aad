@@ -209,13 +209,56 @@ h3 {
 }
 
 .theme {
-  background: none;
-  border: 1px solid var(--line-2);
-  color: var(--fg-2);
-  border-radius: 3px;
+  display: grid;
+  place-items: center;
   width: 28px;
-  height: 26px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--fg-2);
   cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.theme:hover {
+  color: var(--accent);
+  border-color: var(--line-2);
+}
+
+.theme svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Show the theme the button switches to: moon in light mode, sun in dark mode. */
+.theme .sun {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme .sun {
+  display: block;
+}
+
+:root[data-theme="dark"] .theme .moon {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme .sun {
+    display: block;
+  }
+  :root:not([data-theme="light"]) .theme .moon {
+    display: none;
+  }
 }
 
 /* ── layout ──────────────────────────────────────────────────────────────── */
