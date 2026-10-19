@@ -420,7 +420,7 @@ The originals stay outside Git. Records cite the IDs, not copies.
     text: `---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.2.0
+aad_version: 2.2.1
 ---
 
 ## Goal

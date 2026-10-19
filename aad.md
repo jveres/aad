@@ -367,7 +367,7 @@ Use a YAML header for fields that tools can read. Use the Markdown body to expla
 ---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.2.0
+aad_version: 2.2.1
 ---
 
 ## Goal
