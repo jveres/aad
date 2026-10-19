@@ -21,7 +21,28 @@ export interface TreeNode {
   readonly purpose: string;
   readonly source?: string;
   readonly optional?: boolean;
+  /** Example file content from the spec. */
+  readonly sample?: { readonly file: string; readonly text: string };
 }
+
+/** The neutral-domain behavior example from aad.md §3 "Behavior Requirements". */
+const BEH_007 = `## BEH-007 Password reset link
+
+A password reset link lets a user set a new password for a limited time.
+
+- A reset link expires 60 minutes after it is issued.
+- A successful password reset uses the link.
+- Opening the form does not use the link.
+
+Examples:
+- **When** the user opens an unused link 59 minutes after it was issued, **then** the site shows the new-password form.
+- **Given** the user opened the form but did not submit it, **when** they open the link again within 60 minutes, **then** the site shows the form again.
+- **When** the user opens the link 60 minutes after it was issued, **then** the site shows "Link expired" and offers a new link.
+- **When** the user opens a link that they already used, **then** the site shows "Link expired".
+
+Limits:
+- Tests do not use the real mail provider.
+`;
 
 export const TREE: readonly TreeNode[] = [
   {
@@ -89,7 +110,8 @@ export const TREE: readonly TreeNode[] = [
     depth: 2,
     optional: true,
     purpose:
-      "Optional detailed behavior specifications, for example `BEH-007` entries with When/Then examples.",
+      "Optional detailed behavior specifications: a stable ID, one testable rule per bullet, When/Then examples, and Limits. Cite the ID in test names. Recommended, not required.",
+    sample: { file: "wiki/requirements/password-reset.md", text: BEH_007 },
     source: "Required behavior and user outcomes",
   },
   {

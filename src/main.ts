@@ -158,6 +158,12 @@ function renderTree(): void {
       ...(node.source
         ? [h("p", { class: "label" }, "accepted source for"), h("p", {}, node.source)]
         : []),
+      ...(node.sample
+        ? [
+            h("p", { class: "label" }, `example · ${node.sample.file}`),
+            h("pre", { class: "sample" }, h("code", {}, node.sample.text)),
+          ]
+        : []),
     );
   };
   list.replaceChildren(

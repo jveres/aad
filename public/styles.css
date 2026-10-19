@@ -681,6 +681,21 @@ main {
   margin: 4px 0 14px;
 }
 
+[data-tree-detail] .sample {
+  margin: 6px 0 0;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+[data-tree-detail] .sample code,
 [data-tree-detail] h3 code {
   background: none;
   border: 0;
