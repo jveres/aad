@@ -1306,16 +1306,18 @@ textarea:focus-visible {
     color-mix(in srgb, var(--accent) 75%, var(--bg)) 6px 12px
   );
   transition: width 0.3s;
-  position: relative;
   min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 6px;
 }
 
 .progress-bar::after {
   content: attr(data-label);
-  position: absolute;
-  right: 6px;
-  top: 2px;
-  font: 600 11px var(--mono);
+  font: 600 11px / 1 var(--mono);
+  /* Trim to the digits' cap height and baseline so they center optically. */
+  text-box: trim-both cap alphabetic;
   color: var(--accent-ink);
 }
 
