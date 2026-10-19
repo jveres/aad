@@ -1,5 +1,5 @@
 ---
-version: 2.1.0
+version: 2.2.0
 ---
 
 # AAD: Agent-Assisted Development
@@ -28,6 +28,20 @@ People remain responsible for project policies, access, and approval decisions.
 10. Review results before you accept them.
 11. Keep shared tasks current.
 12. Search for suitable existing tools before you create new ones.
+
+### Working Reference
+
+This table links to the governing rules; it does not replace them.
+
+| Activity | Record | Approval and publication |
+|---|---|---|
+| Start or resume | Read current guidance; select the relevant task when needed | [Read Current Guidance](#read-current-guidance) |
+| Answer a bounded question | Conversation, or an exploration record for reusable findings | [Taskless Exploration](#taskless-exploration) |
+| Publish progress or submit a result | Evidence with a short task summary | [Task Publication](#task-publication); only routine task edits may accompany implementation |
+| Propose behavior | Clearly marked proposal, separate from accepted requirements | [Behavior Requirements](#behavior-requirements) |
+| Change accepted behavior | Requirements and tests in the same change | Required behavior-change approval; task-goal edits remain task-only |
+| Hand off for acceptance | Task, revisions, verification, limits, and decision needed | [Acceptance Before Unrelated Implementation](#acceptance-before-unrelated-implementation) |
+| Complete, reopen, cancel, or change a task goal | Task-only publication | Required authorized approval and validation |
 
 ## 3. Repository and Knowledge
 
@@ -144,10 +158,19 @@ Apply these rules:
    preserve meaning do not require that approval. Code must not change accepted
    requirements to match its behavior without the required approval.
 4. Put proposed behavior in a clearly marked proposal section of the task, the
-   change description, or `wiki/proposals/`. Do not change accepted requirements,
-   goals, or success criteria before approval.
+   change description, or `wiki/proposals/`. A proposal records an option; it
+   does not change accepted requirements, goals, success criteria, or authorized
+   implementation scope. A proposal within the task's existing goal may be a
+   routine task update. Record a separate intended outcome outside that task
+   under the task selection rules.
 5. For an approved behavior change, update the requirement and its tests in the
    same change. Record manual checks and known gaps where automation is absent.
+
+The approval required for an accepted behavior change does not by itself make
+the publication task-only. Requirements and their implementation and tests may
+share a publication after the required approval. If that publication also
+changes a task's goal or success criteria, publish the task change separately
+under the task-only rules.
 
 For behavior that needs automated tests, this format is recommended, not
 required:
@@ -218,7 +241,10 @@ Keep private exploration local. Publish the findings that other workers need. In
 
 A task is a unit of work with a clear goal.
 
-Store each task in `wiki/tasks/`. Use the filename as its stable ID.
+Store each task in `wiki/tasks/`. Use the filename as its stable ID. Once
+allocated, do not rename the task to change its ID. Change `title` when its
+label needs correction. Task-path validation must reject a rename that changes
+an allocated ID; it must not treat that rename as cancellation and creation.
 
 ### Task Selection and Scope
 
@@ -245,19 +271,34 @@ new task. Reopening addresses an unmet original goal, not a different outcome.
 
 ### Acceptance Before Unrelated Implementation
 
+Acceptance means completion approval by the project's authorized decision-maker.
+A review recommendation or semantic classification is not acceptance unless
+the worker also has that authority and explicitly grants completion approval.
+
 Before starting unrelated implementation, resolve tasks awaiting acceptance.
 Resolution means acceptance, requested changes, or an explicit decision by the
 existing approval authority to defer review. A commit, push, or merge makes work
 available; it does not grant acceptance.
 
-At startup and before selecting unrelated work, inspect the shared tasks in
-`review`. Present unresolved acceptance decisions and apply the project's
+At startup and before selecting unrelated implementation, inspect the shared
+tasks in `review`. Present unresolved acceptance decisions and apply the project's
 pending-review limit. Engineering guidance sets that limit and its scope; the
 default is one task awaiting acceptance per project. A higher limit allows
 explicitly deferred reviews to coexist, not silent deferral. Starting work that
 would exceed the limit requires an explicit exception from the approval
 authority, recorded with the reason and return condition in the affected tasks.
 Existing records remain valid; apply this selection rule to future work.
+
+The selection rule and the pending-review limit are separate controls.
+Remaining below the limit does not waive the need for an explicit deferral
+before unrelated implementation. Starting unrelated implementation that would
+exceed the limit also requires the recorded exception described above.
+
+This gate applies to unrelated implementation, not every repository activity.
+Bounded exploration, review, authorized publication of existing progress, and
+task-only coordination updates may proceed under their applicable rules.
+Documentation or checkpoint work that implements a separate task goal is
+unrelated implementation for this purpose.
 
 Corrections needed to meet the current task's original goal remain within that
 task. Requested changes return it to `in_progress`; they do not approve starting
@@ -266,9 +307,16 @@ exploration rules. If the user explicitly prioritizes urgent implementation over
 pending review, record that priority as a deferral, including any limit exception.
 A new request alone does not imply acceptance or deferral.
 
-A review handoff must identify the task and delivered revision, summarize the
-result and verification, state remaining limitations, and name the acceptance
-decision needed. Report the total pending-review count, including deferred tasks.
+Use this compact review handoff. Keep detailed evidence with the change or in
+an evidence record.
+
+- Task: ID and intended result.
+- Revisions: base and proposed or delivered revision.
+- Verification: checks, results, and evidence reference.
+- Limits: omitted checks, known gaps, and unresolved findings.
+- Decision needed: the specific acceptance or review decision.
+- Pending reviews: total count, including deferred tasks.
+
 Set `Next` to the specific decision or review action, not only "review and accept."
 
 Explicit acceptance permits `review → done` when the goal and quality conditions
@@ -318,7 +366,7 @@ Use a YAML header for fields that tools can read. Use the Markdown body to expla
 ---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.0.0
+aad_version: 2.2.0
 ---
 
 ## Goal
@@ -401,7 +449,7 @@ invalid. A change category or approval cannot grant an unlisted transition.
 | From | To | Condition | Classification |
 |---|---|---|---|
 | `todo` | `in_progress` | Start work | Routine |
-| `in_progress` | `todo` | Return to backlog under the rules below | Routine |
+| `in_progress` | `todo` | All work was discarded; explain why in `State` | Routine |
 | `in_progress` | `review` | Make the result and evidence available for review | Routine |
 | `review` | `todo` | All work was discarded; explain why in `State` | Routine |
 | `review` | `in_progress` | Review requires more work | Routine |
@@ -418,7 +466,9 @@ Apply these rules:
 - If the review requires more work, return the task to `in_progress`.
 - If the review or a required approval is not complete, keep the task in `review`.
 - If a task is blocked, keep its current status.
-- If work on a task did not start, or all work was discarded, return the task to `todo`.
+- Keep unstarted work in `todo`. Return started work to `todo` only when all
+  work was discarded, and explain why in `State`. Paused or blocked work with
+  retained progress remains `in_progress`.
 - If the original goal is not met, the team can reopen the task.
 - If requirements change, apply the intended-outcome boundary in [Task Selection and Scope](#task-selection-and-scope).
 
@@ -548,6 +598,11 @@ Apply the [audit before each push](#audit-before-each-push) to both publication
 paths. Use automated routine publication where project controls permit it.
 Otherwise, define a review response target in `wiki/engineering.md`.
 
+Where project controls permit, automate task-only completion publication after
+authorized acceptance. The automation must preserve the required approval
+evidence, trusted validation, and separate task-only publication. A code merge
+alone must not trigger completion.
+
 #### Required Task-Change Validation
 
 Every proposed merge that adds, modifies, renames, or deletes a path under
@@ -612,11 +667,16 @@ A candidate cannot use its own rule changes to pass validation. A candidate that
 also changes rules can pass only if its task edits satisfy the trusted rules
 already in force. If the target changes, rerun affected checks before publication.
 
-Adopt AAD 2.0 under the previous rules: publish the guide and related non-task
-adoption changes without task edits. Only later publications can use its new
-combined-publication rules.
-
 AAD defines the task requirements. Engineering guidance and CI configuration define their implementation.
+
+Engineering guidance must name one local command for the mechanical
+task-publication checks and explain how it uses the same structural rules as
+trusted CI. Local results do not replace current-target validation or semantic
+review. Record any local checks that cannot reproduce the trusted environment.
+
+Use mechanically testable Adoption Decision Cases as validator regression
+fixtures where practical. Keep cases that depend on scope, meaning, or authority
+as review scenarios; do not claim that structural checks establish them.
 
 #### Change Categories
 
@@ -820,7 +880,9 @@ Use a different worker for review when possible. Define in `wiki/engineering.md`
 5. Do the required checks.
 6. Record the findings, the results, and the remaining uncertainty.
 7. Identify the reviewed result or revision.
-8. Publish the task status and the next action.
+8. Publish permitted routine task updates and the next action. Recommend
+   approval-sensitive changes unless authorized to approve them. Completion
+   still requires the task-only approval and publication path.
 
 Use checks that fit the result:
 
@@ -1102,6 +1164,18 @@ historical work solely because it predates the new guidance. If the proposal
 requires migration or changes the established process contract described
 above, classify it as major instead.
 
+A task-selection constraint is not a new approval gate when it only determines
+when an existing approval must be resolved or explicitly deferred, without
+adding a new approval decision or changing its authority. Classify changes by
+their effect, not their label. A change that introduces a new approval decision
+or requires approval where none was previously required is major.
+
+The pending-acceptance rule introduced in 2.1 is a selection constraint under
+this distinction: completion authority and approval remain unchanged. Existing
+task records remain valid, but pending reviews can constrain future unrelated
+implementation. On adoption, inspect those reviews and resolve or explicitly
+defer them before proceeding; record any required limit exception.
+
 Classify a release by its most significant change. The reviewed proposal must
 explain the impact on records, lifecycle, approvals, publication, and tooling.
 The version number does not approve the change or waive existing review rules.
@@ -1109,6 +1183,12 @@ The version number does not approve the change or waive existing review rules.
 Update the version with the reviewed change. Under Latest Change, keep a concise list of changed obligations. Include meaningful corrections. Use Git for the full history.
 
 Other documents use Git history without separate version numbers. ADRs also use decision IDs and statuses.
+
+### Historical Migration: AAD 2.0
+
+When moving from a pre-2.0 process, adopt AAD 2.0 under the previous rules:
+publish the guide and related non-task adoption changes without task edits.
+Only later publications can use its combined-publication rules.
 
 ### Read Current Guidance
 
@@ -1172,7 +1252,9 @@ Adapt this template to the paths of the project:
 ## Start
 
 1. Do the startup process in `wiki/aad.md`.
-2. Examine the relevant code, tests, and evidence.
+2. Use its [Working Reference](wiki/aad.md#working-reference) to find the
+   applicable activity and publication rules.
+3. Examine the relevant code, tests, and evidence.
 
 ## Sources
 
@@ -1211,6 +1293,8 @@ Adapt this template to the paths of the project:
   standalone exploration, follow AAD's taskless exploration rule. Reusable
   findings need a record; a conversational answer without them does not.
 ```
+
+The quick reference does not waive the full-guide reading rules.
 
 If a tool needs its own instruction file, use that file to reference `AGENTS.md`.
 
@@ -1326,6 +1410,8 @@ A template with unresolved placeholders does not establish conformance.
 - Explicit review deferrals: <approval, reason, and return condition in task State>
 - Uncertain classifications: <review path and response target>
 - Trusted task checks: <target revision, rules, validator, CI, and all-task-path trigger>
+- Local task checks: <command, shared structural rules, and validation limits>
+- Completion automation: <authorized task-only mechanism, or manual publication>
 - Merge protection: <current-candidate checks and stale-approval controls>
 - Authorized bypasses: <mechanisms and limits, or none>
 
@@ -1376,25 +1462,40 @@ Test against current shared state with identifiable candidate revisions.
 | Deferred reviews reach the configured limit | Require an explicit recorded exception before exceeding it |
 | Approved replacement supersedes pending work | Reconcile the earlier task through approved completion or cancellation; link the replacement |
 | Historical task predates the pending-review rule | Preserve its record; apply the selection rule to future work |
+| Review recommends completion without completion authority | Keep acceptance pending; recommendation alone does not authorize `done` |
+| Pending-review count is below the limit | Still require explicit deferral before unrelated implementation |
+| Adoption finds reviews above the configured limit | Preserve valid records; resolve reviews or record deferrals and required exceptions before unrelated implementation |
+| Started work retains progress but is paused | Keep `in_progress`; do not return it to `todo` |
+| Task rename changes an allocated filename ID | Reject the identity change |
+| Accepted requirement change accompanies implementation and tests | Permit after required approval; actual task-goal edits remain task-only |
+| Clearly marked behavior proposal remains within the task goal | Permit routine recording without approving adoption or implementation |
+| Completion publication is automated | Require authorized acceptance, trusted validation, and a separate task-only publication |
 
 Add documents and tools when repeated work shows a need.
 
 ## Latest Change
 
-2.1.0
+2.2.0
 
-- Resolve pending acceptance before unrelated implementation; inspect reviews
-  at startup and report their count at handoff.
-- Require concrete acceptance decisions and explicit review deferrals with a
-  reason and return condition. Engineering sets the pending-review limit and
-  scope; the default is one per project. Exceptions must be explicit.
-- Clarify when an instruction to continue accepts a named result. Commits,
-  pushes, new requests, and elapsed time do not grant acceptance.
-- Reconcile superseded pending work through existing completion or cancellation
-  rules when recording an approved replacement decision.
-- This minor update adds prospective task-selection and handoff obligations
-  within the existing lifecycle. Records, states, transitions, approval
-  authority, and publication paths are unchanged; no migration is required.
-  Existing validators remain applicable to record structure. Review sequencing
-  and interpretation of acceptance require semantic review unless the project
-  supplies additional controls. Historical approvals remain valid.
+- Define acceptance as authorized completion approval and distinguish it from
+  review recommendations and semantic classification.
+- Clarify the pending-review gate, its implementation scope, and the separate
+  requirements for deferral and limit exceptions.
+- Clarify publication of accepted behavior changes and recording of unaccepted
+  proposals without changing task scope.
+- Resolve backlog-return ambiguity and explicitly preserve allocated task IDs.
+- Add a linked working reference and a compact acceptance-handoff template.
+- Require a documented local mechanical task-check command. Recommend
+  regression fixtures for mechanically testable adoption cases.
+- Support automated task-only completion publication without changing approval
+  or publication requirements.
+- Clarify version classification for task-selection constraints and relocate
+  the historical AAD 2.0 migration instruction.
+- Update the task example and adoption decision cases.
+
+This minor release adds prospective guidance and checks within the existing
+record format, lifecycle, approval authority, and publication model. Existing
+valid task records and accepted decisions remain valid; no record migration is
+required. Projects must update applicable instructions and task-ID validation
+before relying on the new checks. Publish guidance and validator changes before
+task edits that depend on them.

@@ -40,7 +40,7 @@ export const TRANSITIONS: readonly Transition[] = [
   {
     from: "in_progress",
     to: "todo",
-    condition: "Return to backlog: work did not start, or all work was discarded",
+    condition: "All work was discarded; explain why in State",
     classification: "routine",
   },
   {

@@ -214,7 +214,7 @@ export const ACTIVITIES: readonly Activity[] = [
       "Do the required checks.",
       "Record findings, results, and remaining uncertainty.",
       "Identify the reviewed result or revision.",
-      "Publish the task status and the next action.",
+      "Publish permitted routine task updates and the next action; recommend approval-sensitive changes.",
     ],
     note: "Use a different worker when possible. Treat an agent's report as a report, not as proof.",
   },
@@ -395,12 +395,83 @@ export const CASES: readonly (readonly [string, string])[] = [
     "Historical task predates the pending-review rule",
     "Preserve its record; apply the selection rule to future work",
   ],
+  [
+    "Review recommends completion without completion authority",
+    "Keep acceptance pending; recommendation alone does not authorize `done`",
+  ],
+  [
+    "Pending-review count is below the limit",
+    "Still require explicit deferral before unrelated implementation",
+  ],
+  [
+    "Adoption finds reviews above the configured limit",
+    "Preserve valid records; resolve reviews or record deferrals and required exceptions before unrelated implementation",
+  ],
+  ["Started work retains progress but is paused", "Keep `in_progress`; do not return it to `todo`"],
+  ["Task rename changes an allocated filename ID", "Reject the identity change"],
+  [
+    "Accepted requirement change accompanies implementation and tests",
+    "Permit after required approval; actual task-goal edits remain task-only",
+  ],
+  [
+    "Clearly marked behavior proposal remains within the task goal",
+    "Permit routine recording without approving adoption or implementation",
+  ],
+  [
+    "Completion publication is automated",
+    "Require authorized acceptance, trusted validation, and a separate task-only publication",
+  ],
+];
+
+export const WORKING_REFERENCE: readonly (readonly [string, string, string, string])[] = [
+  [
+    "Start or resume",
+    "Read current guidance; select the relevant task when needed",
+    "Read Current Guidance",
+    "read-current-guidance",
+  ],
+  [
+    "Answer a bounded question",
+    "Conversation, or an exploration record for reusable findings",
+    "Taskless Exploration",
+    "taskless-exploration",
+  ],
+  [
+    "Publish progress or submit a result",
+    "Evidence with a short task summary",
+    "Task Publication; only routine task edits may accompany implementation",
+    "task-publication",
+  ],
+  [
+    "Propose behavior",
+    "Clearly marked proposal, separate from accepted requirements",
+    "Behavior Requirements",
+    "behavior-requirements",
+  ],
+  [
+    "Change accepted behavior",
+    "Requirements and tests in the same change",
+    "Required behavior-change approval; task-goal edits remain task-only",
+    "behavior-requirements",
+  ],
+  [
+    "Hand off for acceptance",
+    "Task, revisions, verification, limits, and decision needed",
+    "Acceptance Before Unrelated Implementation",
+    "acceptance-before-unrelated-implementation",
+  ],
+  [
+    "Complete, reopen, cancel, or change a task goal",
+    "Task-only publication",
+    "Required authorized approval and validation",
+    "task-publication",
+  ],
 ];
 
 export const SAMPLE_TASK = `---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.1.0
+aad_version: 2.2.0
 ---
 
 ## Goal

@@ -103,6 +103,22 @@ export const CHANGES: readonly ChangeOption[] = [
     note: "Approval-sensitive, also when expressed through another field.",
   },
   {
+    id: "proposal",
+    group: "Task records",
+    label: "Record a marked behavior proposal within the goal",
+    classification: "routine",
+    kind: "task",
+    note: "Routine. A proposal records an option; it does not approve adoption or implementation.",
+  },
+  {
+    id: "rename",
+    group: "Task records",
+    label: "Rename a task file (changes its allocated ID)",
+    classification: "invalid",
+    kind: "task",
+    note: "Invalid. Change the title instead; a rename is not cancellation plus creation.",
+  },
+  {
     id: "scope",
     group: "Task records",
     label: "Next introduces a possibly separate objective",

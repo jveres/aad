@@ -1,6 +1,6 @@
 # AAD: Agent-Assisted Development
 
-[![spec](https://img.shields.io/badge/spec-v2.1.0-c6f26a?labelColor=0c0e0f)](aad.md)
+[![spec](https://img.shields.io/badge/spec-v2.2.0-c6f26a?labelColor=0c0e0f)](aad.md)
 [![pages](https://github.com/jveres/aad/actions/workflows/pages.yml/badge.svg)](https://github.com/jveres/aad/actions/workflows/pages.yml)
 
 AAD is a working process for software projects where **people and AI agents
@@ -10,7 +10,7 @@ A *worker* is a person or an agent. Each worker must be able to find the rules,
 understand the task, and continue the work **without earlier conversations**.
 People remain responsible for project policies, access, and approval decisions.
 
-- **Spec:** [`aad.md`](aad.md) (version 2.1.0). This is the accepted source. The README and the site summarize it.
+- **Spec:** [`aad.md`](aad.md) (version 2.2.0). This is the accepted source. The README and the site summarize it.
 - **Site:** <https://jveres.github.io/aad/>. An interactive introduction with a state machine, a task linter, and a publication classifier.
 
 ---
@@ -39,7 +39,7 @@ Get a pinned copy of the spec. The tag matches the AAD version:
 
 ```sh
 mkdir -p wiki/tasks && \
-  curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.1.0/aad.md -o wiki/aad.md
+  curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.2.0/aad.md -o wiki/aad.md
 ```
 
 Then follow the adoption steps in [`aad.md` §13](aad.md#13-adoption). Start with one small task:
@@ -82,6 +82,9 @@ This section is a summary. If it disagrees with [`aad.md`](aad.md), the spec win
 11. Keep shared tasks current.
 12. Search for suitable existing tools before you create new ones.
 
+The spec's [Working Reference](aad.md#working-reference) maps each common
+activity to its record and to the rules for approval and publication.
+
 ### Repository layout
 
 The accepted baseline is the current default branch of the shared repository.
@@ -121,7 +124,7 @@ a Markdown body for people:
 ---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.1.0
+aad_version: 2.2.0
 ---
 
 ## Goal
@@ -158,7 +161,7 @@ stateDiagram-v2
     [*] --> review
     [*] --> done: approval
     todo --> in_progress: start
-    in_progress --> todo: back to backlog
+    in_progress --> todo: all work discarded
     in_progress --> review: submit result
     review --> todo: all work discarded
     review --> in_progress: more work
@@ -168,7 +171,11 @@ stateDiagram-v2
 
 The transition table in the spec is authoritative. **An unlisted transition is
 invalid, and no approval can grant it.** For example, `in_progress → done` is
-always rejected. Before starting unrelated implementation, resolve tasks that
+always rejected. Paused or blocked work with retained progress stays
+`in_progress`; `in_progress → todo` is only for discarded work.
+
+*Acceptance* means completion approval by the authorized decision-maker. A
+review recommendation is not acceptance. Before starting unrelated implementation, resolve tasks that
 wait for acceptance (accept, request changes, or record an explicit deferral).
 A commit, push, or merge makes work available. It does not grant acceptance.
 
@@ -182,7 +189,9 @@ A commit, push, or merge makes work available. It does not grant acceptance.
 A pull request is classified by its most restrictive change:
 **invalid → unclassified → approval-sensitive → routine**. Trusted task checks
 load from the current target branch, not from the candidate. A candidate cannot
-use its own rule changes to pass validation.
+use its own rule changes to pass validation. A task ID is stable: a rename that
+changes an allocated ID is rejected. An approved behavior change can ship with
+its implementation and tests; task-goal edits stay task-only.
 
 ### Development activities
 
@@ -226,6 +235,7 @@ from the spec (core rule 1).
 | §04 Linter | Edit a task file and get live diagnostics (header, sections, `Next`, transitions, dependencies, version) |
 | §05 Publication | Compose a pull request and see its classification and publication path |
 | §06 Activities | Step through each development activity |
+| §01 Rules | Core rules and the Working Reference table |
 | §07 Startup | Compute the guide-reading rule and the next version bump |
 | §08 Adoption | Track the 14 adoption steps (stored locally) and search the decision cases |
 
@@ -277,7 +287,7 @@ the tag matches the spec version.
 5. Commit, then tag and push:
 
    ```sh
-   git tag -a v2.2.0 -m "AAD 2.2.0"
+   git tag -a vX.Y.Z -m "AAD X.Y.Z"
    git push origin main --tags
    ```
 

@@ -499,6 +499,80 @@ main {
   color: var(--accent);
 }
 
+.sub {
+  font-size: 18px;
+  margin: 48px 0 4px;
+}
+
+.sub-note {
+  margin: 0 0 16px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.ref {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ref th {
+  text-align: left;
+  font: 500 11px var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--bg-2);
+}
+
+.ref th,
+.ref td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.ref tr:last-child td {
+  border-bottom: 0;
+}
+
+.ref td {
+  color: var(--fg-2);
+}
+
+.ref td:first-child {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--fg);
+}
+
+@media (max-width: 640px) {
+  .ref,
+  .ref tbody,
+  .ref tr,
+  .ref td {
+    display: block;
+  }
+  .ref thead {
+    display: none;
+  }
+  .ref td {
+    border: 0;
+    padding: 2px 14px;
+  }
+  .ref td:first-child {
+    padding-top: 12px;
+  }
+  .ref tr {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+  }
+}
+
 /* ── §02 tree ────────────────────────────────────────────────────────────── */
 
 .tree {
@@ -743,7 +817,10 @@ main {
 }
 
 .log li {
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding-left: 2.2em;
+  text-indent: -2.2em;
   color: var(--fg-2);
 }
 

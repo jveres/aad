@@ -1,4 +1,13 @@
-import { ACTIVITIES, ADOPTION, CASES, CORE_RULES, SAMPLE_TASK, STARTUP, TREE } from "./content.js";
+import {
+  ACTIVITIES,
+  ADOPTION,
+  CASES,
+  CORE_RULES,
+  SAMPLE_TASK,
+  STARTUP,
+  TREE,
+  WORKING_REFERENCE,
+} from "./content.js";
 import { $, h, inline, s, store } from "./dom.js";
 import {
   BOARD_LABEL,
@@ -21,7 +30,7 @@ interface Spec {
   readonly latest: { readonly version: string; readonly items: readonly string[] } | undefined;
 }
 
-let guideVersion = "2.1.0";
+let guideVersion = "2.2.0";
 
 // ── spec ─────────────────────────────────────────────────────────────────────
 
@@ -84,6 +93,24 @@ function renderRules(): void {
   $("[data-rules]").replaceChildren(
     ...CORE_RULES.map((r, i) =>
       h("li", {}, h("span", { class: "n" }, String(i + 1).padStart(2, "0")), h("span", {}, r)),
+    ),
+  );
+}
+
+function renderReference(): void {
+  $("[data-reference]").replaceChildren(
+    ...WORKING_REFERENCE.map(([activity, record, rule, anchor]) =>
+      h(
+        "tr",
+        {},
+        h("td", {}, activity),
+        h("td", {}, record),
+        h(
+          "td",
+          {},
+          h("a", { href: `https://github.com/${REPO}/blob/main/aad.md#${anchor}` }, rule),
+        ),
+      ),
     ),
   );
 }
@@ -445,7 +472,7 @@ function renderActivities(): void {
     }
     body.replaceChildren(
       h("p", { class: "lede-sm" }, a.summary),
-      h("ol", { class: "steps" }, ...a.steps.map((st) => h("li", {}, inline(st)))),
+      h("ol", { class: "steps" }, ...a.steps.map((st) => h("li", {}, h("span", {}, inline(st))))),
       h("p", { class: "note" }, a.note),
     );
   };
@@ -476,7 +503,9 @@ function renderActivities(): void {
 
 const reading = {
   init(): void {
-    $("[data-startup]").replaceChildren(...STARTUP.map((st) => h("li", {}, inline(st))));
+    $("[data-startup]").replaceChildren(
+      ...STARTUP.map((st) => h("li", {}, h("span", {}, inline(st)))),
+    );
     for (const sel of [
       "[data-read-known]",
       "[data-read-current]",
@@ -651,6 +680,7 @@ function initChrome(): void {
 initChrome();
 renderVersion();
 renderRules();
+renderReference();
 renderTree();
 machine.init();
 lint.init();
