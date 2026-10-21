@@ -25,10 +25,10 @@ export const CHANGES: readonly ChangeOption[] = [
   {
     id: "rules",
     group: "Files",
-    label: "Rule or validator changes (AAD, engineering, CI)",
+    label: "Rule, schema, or validator changes (AAD, schemas, engineering, CI)",
     classification: "routine",
     kind: "files",
-    note: "Trusted checks load from the target branch. The candidate cannot use its own rule changes.",
+    note: "Trusted checks load from the target branch. The candidate cannot use its own rule or schema changes.",
   },
   {
     id: "progress",
@@ -137,10 +137,10 @@ export const CHANGES: readonly ChangeOption[] = [
   {
     id: "depends",
     group: "Task records",
-    label: "Task edit depends on rule changes in this candidate",
+    label: "Record edit depends on rule or schema changes in this candidate",
     classification: "invalid",
     kind: "dependency",
-    note: "Invalid. Publish the rule changes first.",
+    note: "Invalid. Publish the rule or schema changes first.",
   },
   {
     id: "req-meaning",
@@ -183,7 +183,9 @@ export function classifyCandidate(ids: readonly string[]): PublicationVerdict | 
 
   const steps: string[] = [];
   if (touchesTasks) {
-    steps.push("Run trusted task checks loaded from the current target branch revision.");
+    steps.push(
+      "Run trusted task checks and applicable schemas loaded from the current target branch revision.",
+    );
   }
   steps.push("Do the audit before each push; record evidence and omitted checks.");
 

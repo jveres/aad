@@ -1,5 +1,5 @@
 ---
-version: 2.2.1
+version: 2.3.0
 ---
 
 # AAD: Agent-Assisted Development
@@ -66,6 +66,11 @@ project/
 └── wiki/
     ├── README.md
     ├── aad.md
+    ├── schemas/
+    │   ├── README.md
+    │   ├── task.schema.md
+    │   ├── exploration.schema.md
+    │   └── decision.schema.md
     ├── requirements.md
     ├── requirements/      # Optional detailed behavior files
     ├── architecture.md
@@ -85,6 +90,7 @@ The paths in angle brackets represent existing project files. If existing paths 
 | `AGENTS.md` | Starting instructions for agents |
 | `wiki/README.md` | Index of shared knowledge |
 | `wiki/aad.md` | Accepted working process |
+| `wiki/schemas/` | Record-structure schemas and their collection index (`wiki/schemas/README.md`) |
 | `wiki/requirements.md` | Accepted behavior and quality requirements |
 | `wiki/requirements/` | Optional detailed behavior specifications |
 | `wiki/architecture.md` | System boundaries and technology roles |
@@ -104,6 +110,16 @@ locations and link the documents from the index. Source ledgers can reference
 private originals without copying them into Git. Accepted proposals record
 the rationale and review outcome; current rules remain in their accepted
 source documents.
+
+Before creating a knowledge document, read the wiki index, any relevant collection index, and search relevant repository files. Update an existing accepted source when it already serves the purpose.
+
+The main index links to accepted guidance and knowledge collections. Describe each entry with a short statement of what it contains or when to use it.
+
+Add a collection-level `README.md` when the collection becomes difficult to navigate from the main index. Keep indexes as navigation, not copies of document content or changing task state.
+
+When adding, moving, or deleting knowledge documents, update affected indexes and references in the same change. Link every new knowledge collection from the main index. Individual documents may be discoverable through a collection index rather than listed in both.
+
+Do not manually list every task in the main index. Link to the task collection or task board.
 
 ### Exploration Records
 
@@ -128,6 +144,10 @@ investigation. Neither record approves adoption.
 | Reasons for significant choices | Decision records |
 | Observed behavior | Code, tests, experiments, and live system evidence |
 | Recovery of checkpointed material | Checkpoint record and the exact historical revisions that it identifies |
+| Task-record structure | [`wiki/schemas/task.schema.md`](schemas/task.schema.md) |
+| Exploration-record structure | [`wiki/schemas/exploration.schema.md`](schemas/exploration.schema.md) |
+| Decision-record structure | [`wiki/schemas/decision.schema.md`](schemas/decision.schema.md) |
+| Record lifecycle, approvals, and publication procedures | `wiki/aad.md` and project engineering guidance, within their existing responsibilities |
 
 CI means continuous integration. CI does automated builds and tests after changes.
 
@@ -211,9 +231,9 @@ Limits:
 
 ### Decision Records
 
-An architectural decision record, or ADR, explains a significant choice.
-
-Record the problem, the chosen approach, the alternatives, the reasons, the consequences, the status, and the evidence.
+An architectural decision record, or ADR, explains a significant choice. Follow
+the structure and status values in
+[`wiki/schemas/decision.schema.md`](schemas/decision.schema.md).
 
 Create new decision proposals with the status `proposed`. After the required approval, change the status to `accepted`.
 
@@ -241,10 +261,10 @@ Keep private exploration local. Publish the findings that other workers need. In
 
 A task is a unit of work with a clear goal.
 
-Store each task in `wiki/tasks/`. Use the filename as its stable ID. Once
-allocated, do not rename the task to change its ID. Change `title` when its
-label needs correction. Task-path validation must reject a rename that changes
-an allocated ID; it must not treat that rename as cancellation and creation.
+Store each task in `wiki/tasks/` using the filename and stable-ID rules in
+[`wiki/schemas/task.schema.md`](schemas/task.schema.md). Task-path validation
+must reject a rename that changes an allocated ID; it must not treat that
+rename as cancellation and creation.
 
 ### Task Selection and Scope
 
@@ -359,58 +379,14 @@ that establishes a separate tracked objective follows the task-creation rules.
 
 ### Format
 
-Use a YAML header for fields that tools can read. Use the Markdown body to explain the work.
-
-`wiki/tasks/T-014.md`
-
-```markdown
----
-title: Add filtering to the payments table
-status: in_progress
-aad_version: 2.2.1
----
-
-## Goal
-Help support staff find failed payments without engineering help.
-Add filtering by payment status.
-Preserve keyboard access.
-Meet the response-time target in the UI requirements.
-
-## State
-Filtering is implemented on branch `T-014-payment-filters`.
-Unit tests pass.
-Keyboard testing has not run.
-
-## Next
-Test keyboard navigation.
-
-## References
-- [UI requirements](../requirements/ui.md)
-```
-
-Required header fields:
-
-| Field | Meaning |
-|---|---|
-| `title` | Short label for the task |
-| `status` | Current task state |
-| `aad_version` | Guide version read and used for this published task update |
+Follow [`wiki/schemas/task.schema.md`](schemas/task.schema.md) for the task
+filename, required and optional YAML fields, allowed status values, required
+Markdown sections, relative link rule, and template.
 
 The recorded AAD version does not freeze the rules for the task. It records the
 publishing worker's guidance, not what a later worker knows or has read.
 
-Each published task must contain these four body sections:
-
-| Section | Content |
-|---|---|
-| `Goal` | Intended result, benefit, and success criteria |
-| `State` | Current progress, evidence, blockers, and unresolved questions |
-| `Next` | Next activity or action |
-| `References` | Relevant sources and work results |
-
 Keep the task short. Replace outdated progress text with the current state.
-
-Write links relative to the task file.
 
 If another worker needs a branch or a revision, record it in `State`. A revision identifies a saved state in Git.
 
@@ -420,12 +396,8 @@ Record changes that exist only in local files.
 
 ### States
 
-| Stored value | Board label | Meaning |
-|---|---|---|
-| `todo` | To Do | Work has not started |
-| `in_progress` | In Progress | Work has started |
-| `review` | In Review | The result waits for review or acceptance |
-| `done` | Done | The goal and the quality conditions are met, and the required approvals are complete |
+See [`wiki/schemas/task.schema.md`](schemas/task.schema.md) for the allowed
+`status` values, their meanings, and the `Next` section rule.
 
 ```mermaid
 stateDiagram-v2
@@ -480,7 +452,9 @@ To request completion, propose `status: done` through the task-only path in
 to `None`. Publish only after the required approval. The approved publication
 records completion; a proposal alone does not.
 
-Set `Next` to `None` only when the status is `done`. For each other status, `Next` must name an action. The task-change validator treats each other combination as invalid.
+Obey the `Next` rule in [`wiki/schemas/task.schema.md`](schemas/task.schema.md).
+The task-change validator treats any other status and `Next` combination as
+invalid.
 
 When you reopen a task, set `Next` to the next action.
 
@@ -506,17 +480,9 @@ The state diagram shows retained tasks. Cancellation is a file removal, not a st
 
 ### Optional Fields
 
-```yaml
-owner: agent-02
-blocked_by:
-  - T-012
-```
-
-The `owner` identifies the worker responsible for the next action. It does not assign a permanent role.
-
-The `blocked_by` field lists unfinished tasks that currently prevent progress.
-Each entry must identify an existing task. Describe external blockers in `State`.
-The board shows these current blockers, not a permanent dependency history.
+See [`wiki/schemas/task.schema.md`](schemas/task.schema.md) for the optional
+`owner` and `blocked_by` fields. Describe external blockers in `State`. The
+board shows these current blockers, not a permanent dependency history.
 
 When a task becomes `done`, remove its ID from all dependents' `blocked_by` fields
 in the same task-only change. Correct affected `State` and `Next` text. Completion
@@ -658,17 +624,24 @@ validity rule.
 Validate the proposed transition against the current shared task, not only against the original base of the pull request. For example, block a stale update that changes a completed task from `done` to `review`.
 
 Load trusted rules and checks from the current target branch, not the
-candidate or its original branch point. Trusted sources include AAD, engineering
-policy, validator code, and CI configuration. Record that exact target revision
-and validate the proposed merge against it. For local-only publication, use the
-accepted branch revision before the candidate commits.
+candidate or its original branch point. Trusted sources include AAD, applicable
+record schemas, engineering policy, validator code, and CI configuration. Record
+that exact target revision and validate the proposed merge against it. For
+local-only publication, use the accepted branch revision before the candidate
+commits.
 
-Publish changes to rules or validators before task edits that depend on them.
-A candidate cannot use its own rule changes to pass validation. A candidate that
-also changes rules can pass only if its task edits satisfy the trusted rules
-already in force. If the target changes, rerun affected checks before publication.
+Publish changes to rules, schemas, or validators before record edits that
+depend on them. A candidate cannot use its own rule or schema changes to pass
+validation. A candidate that also changes rules or schemas can pass only if its
+record edits satisfy the trusted rules and schemas already in force. If the
+target changes, rerun affected checks before publication.
 
-AAD defines the task requirements. Engineering guidance and CI configuration define their implementation.
+AAD and [`wiki/schemas/task.schema.md`](schemas/task.schema.md) define the task
+requirements. Engineering guidance and CI configuration define their
+implementation. A Markdown schema does not establish that automated validation
+exists, and exploration or decision schemas do not require new automated
+validators. Where checks consume a schema, document its trusted source and
+applicable limits in `wiki/engineering.md`.
 
 Engineering guidance must name one local command for the mechanical
 task-publication checks and explain how it uses the same structural rules as
@@ -780,11 +753,11 @@ Exploration assesses possible approaches before the team selects one.
 4. Read current primary sources, for example official documentation.
 5. Compare the options against the criteria.
 6. If evidence is missing, do a small experiment.
-7. Record reusable findings and source links in an exploration record. Include
-   the question, comparison criteria, date, evidence, untested claims, conclusion,
-   and remaining uncertainty. A conversational answer with no reusable project
-   finding needs no task or repository file under [Taskless Exploration](#taskless-exploration). Update an existing task only under
-   the task selection and scope rules.
+7. Record reusable findings and source links in an exploration record that
+   follows [`wiki/schemas/exploration.schema.md`](schemas/exploration.schema.md).
+   A conversational answer with no reusable project finding needs no task or
+   repository file under [Taskless Exploration](#taskless-exploration). Update
+   an existing task only under the task selection and scope rules.
 8. Separate verified results from assumptions.
 9. Recommend an option, or explain why none fits.
 
@@ -1259,7 +1232,9 @@ Adapt this template to the paths of the project:
 
 ## Sources
 
+- Knowledge index: `wiki/README.md`
 - Working process: `wiki/aad.md`
+- Record schemas: [wiki/schemas/README.md](wiki/schemas/README.md) (task schema: [wiki/schemas/task.schema.md](wiki/schemas/task.schema.md))
 - Accepted behavior: `wiki/requirements.md` or its established equivalent
 - System structure: `wiki/architecture.md`
 - Procedures and approvals: `wiki/engineering.md`
@@ -1271,6 +1246,11 @@ Adapt this template to the paths of the project:
 
 - Use existing scripts and suitable approved skills.
 - Use native tools for private notes and plans.
+- Before creating a knowledge document, read `wiki/README.md`, any relevant
+  collection index, and search relevant repository files; update an existing
+  accepted source when it already serves the purpose.
+- Load the applicable schema in [wiki/schemas/README.md](wiki/schemas/README.md)
+  when creating or structurally checking a task, exploration, or decision record.
 - Match the request to a task's goal before editing that task. Startup tasks
   are not default records for new work.
 - Store standalone exploration evidence in the directory named by engineering
@@ -1295,7 +1275,8 @@ Adapt this template to the paths of the project:
   findings need a record; a conversational answer without them does not.
 ```
 
-The quick reference does not waive the full-guide reading rules.
+The quick reference does not waive the full-guide reading rules. Targeted
+schema loading improves record operations; it does not replace startup guidance.
 
 If a tool needs its own instruction file, use that file to reference `AGENTS.md`.
 
@@ -1376,8 +1357,8 @@ Tool output alone is not proof of compliance.
 
 Start with one small task.
 
-1. Add this guide as `wiki/aad.md`.
-2. Create `AGENTS.md` and the wiki index.
+1. Add this guide as `wiki/aad.md` and install the record schemas under `wiki/schemas/`. Reuse equivalent established project locations where appropriate, updating all links consistently.
+2. Create `AGENTS.md` and `wiki/README.md`, linking `wiki/schemas/README.md` and the project's knowledge collections.
 3. Document setup, checks, approvals, and completion rules.
 4. Define task ID allocation.
 5. Name the accepted baseline and combined and task-only publication methods.
@@ -1385,7 +1366,7 @@ Start with one small task.
 7. Record essential requirements and decisions.
 8. Record approved skills and tools.
 9. Record the selected ASD-STE100 issue.
-10. Create the first task.
+10. Create the first task using [`wiki/schemas/task.schema.md`](schemas/task.schema.md).
 11. Ask an agent without earlier context to do the next activity.
 12. Publish coordination state promptly. Include routine progress with
     implementation where appropriate; keep completion separate.
@@ -1410,7 +1391,7 @@ A template with unresolved placeholders does not establish conformance.
 - Pending-review limit: <count and scope; default one per project>
 - Explicit review deferrals: <approval, reason, and return condition in task State>
 - Uncertain classifications: <review path and response target>
-- Trusted task checks: <target revision, rules, validator, CI, and all-task-path trigger>
+- Trusted task checks: <target revision, rules, schemas, validator, CI, and all-task-path trigger>
 - Local task checks: <command, shared structural rules, and validation limits>
 - Completion automation: <authorized task-only mechanism, or manual publication>
 - Merge protection: <current-candidate checks and stale-approval controls>
@@ -1443,7 +1424,7 @@ Test against current shared state with identifiable candidate revisions.
 | Code and initial task creation in `done` | Reject combined publication; creation needs task-only approval |
 | Change adds, removes, or alters an accepted behavior obligation | Require goal-level approval |
 | Requirement wording changes without a meaning change | Allow after review; no goal-level approval needed |
-| Task edit depends on rule changes in the same candidate | Reject; publish rule changes first |
+| Task or record edit depends on rule or schema changes in the same candidate | Reject; publish rule or schema changes first |
 | Long-lived branch has a stale task edit | Validate against the current accepted task and preserve other workers' changes |
 | Target branch changes during review | Rerun affected checks against the new target revision |
 | Project has no remote | Use its declared local baseline and report that it is not shared |
@@ -1476,16 +1457,15 @@ Add documents and tools when repeated work shows a need.
 
 ## Latest Change
 
-2.2.1
+2.3.0
 
-- Label the `in_progress → todo` diagram edge "Discard all work" to match the
-  transition table. Paused work with retained progress stays `in_progress`.
-- Apply the pending-review limit exception to starting unrelated
-  implementation, consistent with the scope of the acceptance gate.
-- Point the task example's `References` link to `../requirements/ui.md`, a
-  path in the repository layout.
-- State that task-path validation inspects both paths of a rename to reject it.
+- Move task, exploration, and decision record structures into dedicated Markdown
+  schemas under `wiki/schemas/`, with minimal templates.
+- Require index lookup and repository search before creating knowledge documents.
+- Define lightweight main and collection indexes, maintained with affected changes.
+- Update agent entry points, adoption, and applicable trusted validation for schemas.
 
-This patch release corrects wording, a diagram label, and an example link to
-match the accepted 2.2.0 rules. Required behavior, records, lifecycle,
-approvals, and publication are unchanged.
+Existing records remain valid. Task states, transitions, approval authority,
+publication paths, and startup-reading requirements are unchanged. No record
+migration is required. Publish schema and validator changes before record edits
+that depend on them.

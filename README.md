@@ -1,6 +1,6 @@
 # AAD: Agent-Assisted Development
 
-[![spec](https://img.shields.io/badge/spec-v2.2.1-c6f26a?labelColor=0c0e0f)](aad.md)
+[![spec](https://img.shields.io/badge/spec-v2.3.0-c6f26a?labelColor=0c0e0f)](aad.md)
 [![pages](https://github.com/jveres/aad/actions/workflows/pages.yml/badge.svg)](https://github.com/jveres/aad/actions/workflows/pages.yml)
 
 AAD is a working process for software projects where **people and AI agents
@@ -10,7 +10,7 @@ A *worker* is a person or an agent. Each worker must be able to find the rules,
 understand the task, and continue the work **without earlier conversations**.
 People remain responsible for project policies, access, and approval decisions.
 
-- **Spec:** [`aad.md`](aad.md) (version 2.2.1). This is the accepted source. The README and the site summarize it.
+- **Spec:** [`aad.md`](aad.md) (version 2.3.0) and record schemas in [`wiki/schemas/`](wiki/schemas/README.md). These are the accepted sources. The README and the site summarize them.
 - **Site:** <https://jveres.github.io/aad/>. An interactive introduction with a state machine, a task linter, and a publication classifier.
 
 ---
@@ -39,13 +39,13 @@ Open an agent in the project folder and paste this prompt. The folder can be
 empty or an existing project. You do not need to download anything first.
 
 ```text
-Set up AAD (Agent-Assisted Development) 2.2.1 in this project folder. The folder can be empty or an existing project.
+Set up AAD (Agent-Assisted Development) 2.3.0 in this project folder. The folder can be empty or an existing project.
 
-1. Download the guide: mkdir -p wiki && curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.2.1/aad.md -o wiki/aad.md
+1. Download the guide and schemas: mkdir -p wiki/schemas && curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.0/aad.md -o wiki/aad.md && for f in README.md task.schema.md exploration.schema.md decision.schema.md; do curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.0/wiki/schemas/$f" -o "wiki/schemas/$f"; done
    If wiki/aad.md already exists, compare the versions and ask me before you replace it. Read the full guide. §13 Adoption is the checklist; §9 has the AGENTS.md template.
 2. Examine the folder: Git repository, remote and default branch, README, AGENTS.md, CLAUDE.md and other agent instruction files, docs, build and test commands, CI. If there is no Git repository, ask me before you run git init. Do not overwrite or move existing files. Extend them, or link to existing equivalents.
-3. Create or extend AGENTS.md, wiki/README.md, and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, task ID allocation, publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
-4. Create other documents only when they have real content now. Ask me for one small, real first task and create it in wiki/tasks/.
+3. Create or extend AGENTS.md, wiki/README.md (linking wiki/schemas/README.md and the knowledge collections), and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, task ID allocation, publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
+4. Create other documents only when they have real content now. Ask me for one small, real first task and create it in wiki/tasks/ using wiki/schemas/task.schema.md.
 5. Show me the changes and the 14 adoption steps, each marked done or gap. Do not commit or push without my approval.
 6. Tell me how to test the setup: a new agent session without this conversation does the next activity of the first task, and a second agent reviews the result.
 ```
@@ -53,18 +53,21 @@ Set up AAD (Agent-Assisted Development) 2.2.1 in this project folder. The folder
 The agent stops for your decisions and approvals. Then it gives you the
 trial to run (steps 11–14 below). Those steps need fresh agent sessions.
 
-To get only the guide, without the agent setup, download a pinned copy. The tag
-matches the AAD version:
+To get only the guide and schemas, without the agent setup, download a pinned
+copy. The tag matches the AAD version:
 
 ```sh
-mkdir -p wiki/tasks && \
-  curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.2.1/aad.md -o wiki/aad.md
+mkdir -p wiki/schemas wiki/tasks && \
+  curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.0/aad.md -o wiki/aad.md && \
+  for f in README.md task.schema.md exploration.schema.md decision.schema.md; do \
+    curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.0/wiki/schemas/$f" -o "wiki/schemas/$f"; \
+  done
 ```
 
 The adoption steps in [`aad.md` §13](aad.md#13-adoption):
 
-1. Add the guide as `wiki/aad.md`.
-2. Create `AGENTS.md` (template in [§9](aad.md#9-agent-entry-point)) and the wiki index.
+1. Add the guide as `wiki/aad.md` and install the record schemas under `wiki/schemas/`. Reuse equivalent project locations where appropriate, updating all links consistently.
+2. Create `AGENTS.md` (template in [§9](aad.md#9-agent-entry-point)) and `wiki/README.md`, linking `wiki/schemas/README.md` and the knowledge collections.
 3. Document setup, checks, approvals, and completion rules in `wiki/engineering.md`.
 4. Define task ID allocation.
 5. Name the accepted baseline and the combined and task-only publication methods.
@@ -72,7 +75,7 @@ The adoption steps in [`aad.md` §13](aad.md#13-adoption):
 7. Record essential requirements and decisions.
 8. Record approved skills and tools.
 9. Record the selected ASD-STE100 issue.
-10. Create the first task.
+10. Create the first task using `wiki/schemas/task.schema.md`.
 11. Ask an agent without earlier context to do the next activity.
 12. Publish coordination state promptly. Keep completion separate.
 13. Ask another agent to continue or review the result.
@@ -112,38 +115,58 @@ state is not shared.
 
 ```text
 project/
-├── AGENTS.md             # starting instructions for agents
+├── AGENTS.md                   # starting instructions for agents
 ├── src/  tests/  scripts/
 └── wiki/
-    ├── README.md         # index of shared knowledge
-    ├── aad.md            # accepted working process (the only versioned doc)
-    ├── requirements.md   # accepted behavior and quality requirements
-    ├── architecture.md   # system boundaries and technology roles
-    ├── engineering.md    # setup, checks, approvals, publication, tools
-    ├── decisions/        # ADRs: proposed → accepted | rejected | superseded
-    ├── experiments/      # exploration records and evidence
-    ├── checkpoints/      # current-state summaries and recovery maps
-    ├── proposals/        # proposed process changes
-    ├── sources/          # source ledgers and provenance
-    └── tasks/            # one file per task; filename = stable ID
+    ├── README.md               # main knowledge index
+    ├── aad.md                  # accepted working process (the only versioned doc)
+    ├── schemas/                # record-structure schemas + collection index
+    │   ├── README.md
+    │   ├── task.schema.md
+    │   ├── exploration.schema.md
+    │   └── decision.schema.md
+    ├── requirements.md         # accepted behavior and quality requirements
+    ├── architecture.md         # system boundaries and technology roles
+    ├── engineering.md          # setup, checks, approvals, publication, tools
+    ├── decisions/              # ADRs: proposed → accepted | rejected | superseded
+    ├── experiments/            # exploration records and evidence
+    ├── checkpoints/            # current-state summaries and recovery maps
+    ├── proposals/              # proposed process changes
+    ├── sources/                # source ledgers and provenance
+    └── tasks/                  # one file per task; filename = stable ID
 ```
 
 Requirements go in policy, mechanics go in configuration, and reasons go in
-decision records. A written rule does not enforce itself.
+decision records. Dedicated Markdown schemas in [`wiki/schemas/`](wiki/schemas/README.md)
+define record structure ([`task.schema.md`](wiki/schemas/task.schema.md),
+[`exploration.schema.md`](wiki/schemas/exploration.schema.md),
+[`decision.schema.md`](wiki/schemas/decision.schema.md)), while [`aad.md`](aad.md)
+and `wiki/engineering.md` govern lifecycle, approvals, and publication. A written
+rule or Markdown schema does not enforce itself.
+
+`wiki/README.md` is the main knowledge index: it links to accepted guidance and
+knowledge collections with a short statement of what each contains or when to
+use it. Add a collection `README.md` (such as `wiki/schemas/README.md`) when a
+collection becomes difficult to navigate from the main index. Before creating a
+knowledge document, read the wiki index, any relevant collection index, and
+search relevant repository files; update an existing accepted source when it
+already fits. Update affected indexes and references in the same change, and
+link to the task collection or board rather than listing every task in the main
+index.
 
 Agents keep private notes and plans in their own tools. Remembered project
 facts are hints: compare them with current sources before you act on them.
 
 ### Tasks
 
-A task is a unit of work with a clear goal. It has a YAML header for tools and
+A task is a unit of work with a clear goal ([`wiki/schemas/task.schema.md`](wiki/schemas/task.schema.md)). It has a YAML header for tools and
 a Markdown body for people:
 
 ```markdown
 ---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.2.1
+aad_version: 2.3.0
 ---
 
 ## Goal
@@ -207,24 +230,31 @@ A commit, push, or merge makes work available. It does not grant acceptance.
 
 A pull request is classified by its most restrictive change:
 **invalid → unclassified → approval-sensitive → routine**. Trusted task checks
-load from the current target branch, not from the candidate. A candidate cannot
-use its own rule changes to pass validation. A task ID is stable: a rename that
-changes an allocated ID is rejected. An approved behavior change can ship with
-its implementation and tests; task-goal edits stay task-only.
+and applicable record schemas load from the current target branch, not from the
+candidate. A candidate cannot use its own rule or schema changes to pass
+validation; publish schema or validator changes before record edits that depend
+on them. A task ID is stable: a rename that changes an allocated ID is rejected.
+An approved behavior change can ship with its implementation and tests;
+task-goal edits stay task-only.
 
 ### Development activities
 
 Discovery → Exploration → Implementation → Review → Delivery → Operation, plus
 **Project Checkpoint** to reduce the live tree while Git keeps the history. The
-task goal defines the result. `Next` names the activity. Different agents can
-do different activities in the same task. Before each push, do an
-**audit**: compare against the latest baseline, find stale guidance, and record
-evidence and omitted checks.
+task goal defines the result. `Next` names the activity. Reusable exploration
+findings follow [`wiki/schemas/exploration.schema.md`](wiki/schemas/exploration.schema.md)
+and architectural decisions follow [`wiki/schemas/decision.schema.md`](wiki/schemas/decision.schema.md)
+(neither requires YAML or invalidates existing records that use different
+headings). Different agents can do different activities in the same task. Before
+each push, do an **audit**: compare against the latest baseline, find stale
+guidance, and record evidence and omitted checks.
 
 ### Startup and guide reading
 
 Each worker starts from `AGENTS.md`, fetches the accepted baseline, and
-establishes which guide revision it read earlier:
+establishes which guide revision it read earlier. Targeted schema loading
+improves record creation and checks, but does not waive full-guide startup
+reading:
 
 | Known baseline vs current guide | Required reading |
 |---|---|
@@ -249,9 +279,9 @@ from the spec (core rule 1).
 
 | Section | What you can do |
 |---|---|
-| §02 Repository | Explore the layout, the accepted source, and an example file for each path (spec examples are checked against `aad.md`) |
+| §02 Repository | Explore the layout, the accepted source, and an example file for each path, including `wiki/schemas/` (spec and schema examples are checked against `aad.md` and `wiki/schemas/*.md`) |
 | §03 Lifecycle | Drive a task through the state machine; see routine, approval-gated, and rejected transitions |
-| §04 Linter | Edit a task file and get live diagnostics (header, sections, `Next`, transitions, dependencies, version) |
+| §04 Linter | Edit a task file and get live diagnostics against `wiki/schemas/task.schema.md` and `wiki/aad.md` (header, sections, `Next`, transitions, dependencies, version) |
 | §05 Publication | Compose a pull request and see its classification and publication path |
 | §06 Activities | Step through each development activity |
 | §01 Rules | Core rules and the Working Reference table |
@@ -274,11 +304,12 @@ npm ci
 npm run serve        # build, then serve public/ at http://localhost:8080
 npm run check        # version consistency + biome + tsc --noEmit
 npm run format       # apply biome fixes and formatting
-npm run build        # tsc → public/js, copy aad.md → public/
+npm run build        # tsc → public/js, copy aad.md and wiki/schemas/ → public/, verify samples
 ```
 
 ```text
 aad.md                    # the spec (accepted source)
+wiki/schemas/             # record schemas: README, task, exploration, decision
 public/                   # static site: index.html, styles.css, favicon.svg
 src/
   model.ts                # states, transition and creation tables, classification order

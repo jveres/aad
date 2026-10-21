@@ -34,7 +34,7 @@ export const TREE: readonly TreeNode[] = [
     name: "AGENTS.md",
     depth: 1,
     purpose:
-      "Starting instructions for agents. Short: it points to the startup process and the sources.",
+      "Starting instructions for agents: startup process, sources (including wiki/schemas/README.md and wiki/schemas/task.schema.md), index-first search, and targeted schema loading.",
     source: "Agent entry point (§9)",
   },
   {
@@ -70,12 +70,47 @@ export const TREE: readonly TreeNode[] = [
     source: "CI execution",
   },
   { name: "wiki/", depth: 1, purpose: "Shared knowledge. Each topic has one accepted source." },
-  { name: "README.md", depth: 2, purpose: "Index of shared knowledge.", source: "Knowledge index" },
+  {
+    name: "README.md",
+    depth: 2,
+    purpose:
+      "Main knowledge index. Links to accepted guidance and knowledge collections with a short statement of what each contains or when to use it. Read before creating a knowledge document.",
+    source: "Knowledge index",
+  },
   {
     name: "aad.md",
     depth: 2,
-    purpose: "Accepted working process. The only versioned document.",
-    source: "Working process",
+    purpose:
+      "Accepted working process, record lifecycle, approvals, and publication procedures. The only versioned document.",
+    source: "Working process, record lifecycle, approvals, and publication procedures",
+  },
+  {
+    name: "schemas/",
+    depth: 2,
+    purpose:
+      "Record-structure schemas and their collection index (wiki/schemas/README.md). Load the applicable schema when creating or structurally checking a record.",
+    source: "Schema collection index",
+  },
+  {
+    name: "task.schema.md",
+    depth: 3,
+    purpose:
+      "Accepted structure for task records: stable filename ID, required and optional YAML fields, allowed status values, required Markdown sections, Next rule, relative links, and template.",
+    source: "Task-record structure",
+  },
+  {
+    name: "exploration.schema.md",
+    depth: 3,
+    purpose:
+      "Accepted structure for exploration records: question, comparison criteria, date, evidence and source links, untested claims, conclusion, remaining uncertainty, and template. No mandatory YAML.",
+    source: "Exploration-record structure",
+  },
+  {
+    name: "decision.schema.md",
+    depth: 3,
+    purpose:
+      "Accepted structure for ADRs: problem, chosen approach, alternatives, reasons, consequences, status (proposed, accepted, rejected, superseded), evidence, and template. No mandatory YAML.",
+    source: "Decision-record structure",
   },
   {
     name: "requirements.md",
@@ -102,21 +137,21 @@ export const TREE: readonly TreeNode[] = [
     name: "engineering.md",
     depth: 2,
     purpose:
-      "Setup, commands, quality policy, approvals, approved tools, baseline, and publication method.",
+      "Setup, commands, quality policy, approvals, approved tools, baseline, trusted checks and schemas, and publication method.",
     source: "Development and operational procedures",
   },
   {
     name: "decisions/",
     depth: 2,
     purpose:
-      "ADRs: problem, approach, alternatives, reasons, consequences, status, evidence. proposed → accepted | rejected | superseded.",
+      "Significant choices and their reasons. Structure and statuses follow wiki/schemas/decision.schema.md; approval and lifecycle rules stay in wiki/aad.md.",
     source: "Reasons for significant choices",
   },
   {
     name: "experiments/",
     depth: 2,
     purpose:
-      "Exploration findings, trials, prototypes, and their evidence. Findings do not approve adoption.",
+      "Exploration findings, trials, prototypes, and their evidence. Structure follows wiki/schemas/exploration.schema.md; findings do not approve adoption.",
     source: "Exploration records",
   },
   {
@@ -140,7 +175,8 @@ export const TREE: readonly TreeNode[] = [
   {
     name: "tasks/",
     depth: 2,
-    purpose: "Goals, progress, and next actions. One file per task; the filename is the stable ID.",
+    purpose:
+      "Goals, progress, and next actions. Structure follows wiki/schemas/task.schema.md; lifecycle, approvals, and publication follow wiki/aad.md.",
     source: "Shared progress",
   },
 ];
@@ -179,7 +215,7 @@ export const ACTIVITIES: readonly Activity[] = [
       "Read current primary sources.",
       "Compare the options against the criteria.",
       "If evidence is missing, do a small experiment.",
-      "Record reusable findings in an exploration record.",
+      "Record reusable findings in an exploration record following `wiki/schemas/exploration.schema.md`.",
       "Separate verified results from assumptions.",
       "Recommend an option, or explain why none fits.",
     ],
@@ -195,8 +231,8 @@ export const ACTIVITIES: readonly Activity[] = [
       "If necessary, create a private detailed plan.",
       "Make the change within the agreed scope.",
       "Do the required tests and the code analysis.",
-      "Update the affected documents.",
-      "For a significant choice, create an ADR with status proposed.",
+      "Update the affected documents and affected wiki indexes.",
+      "For a significant choice, create an ADR with status `proposed` following `wiki/schemas/decision.schema.md`.",
       "Prepare implementation commits and separate routine task commits.",
       "Complete the audit before each push, then publish.",
     ],
@@ -276,8 +312,8 @@ export const STARTUP: readonly string[] = [
 ];
 
 export const ADOPTION: readonly string[] = [
-  "Add the guide as `wiki/aad.md`.",
-  "Create `AGENTS.md` and the wiki index.",
+  "Add the guide as `wiki/aad.md` and install the record schemas under `wiki/schemas/`. Reuse equivalent established project locations where appropriate, updating all links consistently.",
+  "Create `AGENTS.md` and `wiki/README.md`, linking `wiki/schemas/README.md` and the project's knowledge collections.",
   "Document setup, checks, approvals, and completion rules.",
   "Define task ID allocation.",
   "Name the accepted baseline and the combined and task-only publication methods.",
@@ -285,7 +321,7 @@ export const ADOPTION: readonly string[] = [
   "Record essential requirements and decisions.",
   "Record approved skills and tools.",
   "Record the selected ASD-STE100 issue.",
-  "Create the first task.",
+  "Create the first task using `wiki/schemas/task.schema.md`.",
   "Ask an agent without earlier context to do the next activity.",
   "Publish coordination state promptly; keep completion separate.",
   "Ask another agent to continue or review the result.",
@@ -330,7 +366,10 @@ export const CASES: readonly (readonly [string, string])[] = [
     "Requirement wording changes without a meaning change",
     "Allow after review; no goal-level approval needed",
   ],
-  ["Task edit depends on rule changes in the same candidate", "Reject; publish rule changes first"],
+  [
+    "Task or record edit depends on rule or schema changes in the same candidate",
+    "Reject; publish rule or schema changes first",
+  ],
   [
     "Long-lived branch has a stale task edit",
     "Validate against the current accepted task and preserve other workers' changes",
@@ -471,7 +510,7 @@ export const WORKING_REFERENCE: readonly (readonly [string, string, string, stri
 export const SAMPLE_TASK = `---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.2.1
+aad_version: 2.3.0
 ---
 
 ## Goal
@@ -497,11 +536,11 @@ Test keyboard navigation.
 export function adoptPrompt(repo: string, version: string): string {
   return `Set up AAD (Agent-Assisted Development) ${version} in this project folder. The folder can be empty or an existing project.
 
-1. Download the guide: mkdir -p wiki && curl -fsSL https://raw.githubusercontent.com/${repo}/v${version}/aad.md -o wiki/aad.md
+1. Download the guide and schemas: mkdir -p wiki/schemas && curl -fsSL https://raw.githubusercontent.com/${repo}/v${version}/aad.md -o wiki/aad.md && for f in README.md task.schema.md exploration.schema.md decision.schema.md; do curl -fsSL "https://raw.githubusercontent.com/${repo}/v${version}/wiki/schemas/$f" -o "wiki/schemas/$f"; done
    If wiki/aad.md already exists, compare the versions and ask me before you replace it. Read the full guide. §13 Adoption is the checklist; §9 has the AGENTS.md template.
 2. Examine the folder: Git repository, remote and default branch, README, AGENTS.md, CLAUDE.md and other agent instruction files, docs, build and test commands, CI. If there is no Git repository, ask me before you run git init. Do not overwrite or move existing files. Extend them, or link to existing equivalents.
-3. Create or extend AGENTS.md, wiki/README.md, and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, task ID allocation, publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
-4. Create other documents only when they have real content now. Ask me for one small, real first task and create it in wiki/tasks/.
+3. Create or extend AGENTS.md, wiki/README.md (linking wiki/schemas/README.md and the knowledge collections), and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, task ID allocation, publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
+4. Create other documents only when they have real content now. Ask me for one small, real first task and create it in wiki/tasks/ using wiki/schemas/task.schema.md.
 5. Show me the changes and the 14 adoption steps, each marked done or gap. Do not commit or push without my approval.
 6. Tell me how to test the setup: a new agent session without this conversation does the next activity of the first task, and a second agent reviews the result.`;
 }

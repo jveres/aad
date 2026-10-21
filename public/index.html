@@ -31,6 +31,7 @@
       </nav>
       <div class="bar-end">
         <a href="https://github.com/jveres/aad/blob/main/aad.md" class="ext">spec</a>
+        <a href="https://github.com/jveres/aad/tree/main/wiki/schemas" class="ext">schemas</a>
         <a href="https://github.com/jveres/aad" class="ext">github</a>
         <button type="button" class="theme" data-theme-toggle aria-label="Toggle color theme">
           <svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
@@ -62,7 +63,7 @@
         </div>
         <div class="term">
           <div class="term-head">
-            <span>or get the guide only</span>
+            <span>or get the guide and schemas</span>
             <button type="button" class="copy" data-copy="#adopt-cmd">copy</button>
           </div>
           <pre><code id="adopt-cmd"></code></pre>
@@ -70,7 +71,7 @@
         <dl class="facts">
           <div><dt>workers</dt><dd>people + agents</dd></div>
           <div><dt>source of truth</dt><dd>repo default branch</dd></div>
-          <div><dt>unit of work</dt><dd><code>wiki/tasks/T-*.md</code></dd></div>
+          <div><dt>record schemas</dt><dd><code>wiki/schemas/*.schema.md</code></dd></div>
           <div><dt>authority</dt><dd>people approve</dd></div>
         </dl>
       </section>
@@ -99,8 +100,8 @@
           <span class="sec-no">§02</span>
           <h2>Repository and knowledge</h2>
           <p>
-            One accepted source per kind of information. Policy holds requirements,
-            configuration holds mechanics, decision records hold reasons.
+            One accepted source per kind of information. Lightweight indexes guide discovery;
+            dedicated schemas define task, exploration, and decision record structures.
           </p>
         </header>
         <div class="split">
@@ -147,8 +148,9 @@
           <span class="sec-no">§04</span>
           <h2>Task file linter</h2>
           <p>
-            YAML header for tools, Markdown body for people. Edit the task; checks run as you type.
-            Structural checks cannot prove scope. Semantic review still applies.
+            Checks a task against <code>wiki/schemas/task.schema.md</code> and the lifecycle rules in
+            <code>wiki/aad.md</code>. Edit the task; checks run as you type. Structural checks cannot
+            prove scope; semantic review still applies.
           </p>
         </header>
         <div class="lint">
@@ -211,7 +213,10 @@
         <header class="sec-head">
           <span class="sec-no">§07</span>
           <h2>Startup and guide reading</h2>
-          <p>Every worker runs the same startup. What it must re-read depends on what it knows.</p>
+          <p>
+            Every worker runs the same startup. Targeted schema loading improves record operations;
+            it does not replace full-guide startup reading.
+          </p>
         </header>
         <div class="split">
           <ol class="steps" data-startup></ol>

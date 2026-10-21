@@ -1,10 +1,11 @@
 // Example file content for each path in §02. `fromSpec` samples are verbatim
-// code blocks of aad.md and are checked by scripts/check-samples.js.
+// code blocks of aad.md or wiki/schemas/*.md and are checked by scripts/check-samples.js.
 
 export interface Sample {
   readonly file: string;
   readonly text: string;
   readonly fromSpec: boolean;
+  readonly origin?: string;
 }
 
 export const SAMPLES: Readonly<Record<string, Sample>> = {
@@ -21,6 +22,11 @@ export const SAMPLES: Readonly<Record<string, Sample>> = {
 └── wiki/
     ├── README.md
     ├── aad.md
+    ├── schemas/
+    │   ├── README.md
+    │   ├── task.schema.md
+    │   ├── exploration.schema.md
+    │   └── decision.schema.md
     ├── requirements.md
     ├── requirements/      # Optional detailed behavior files
     ├── architecture.md
@@ -47,7 +53,9 @@ export const SAMPLES: Readonly<Record<string, Sample>> = {
 
 ## Sources
 
+- Knowledge index: \`wiki/README.md\`
 - Working process: \`wiki/aad.md\`
+- Record schemas: [wiki/schemas/README.md](wiki/schemas/README.md) (task schema: [wiki/schemas/task.schema.md](wiki/schemas/task.schema.md))
 - Accepted behavior: \`wiki/requirements.md\` or its established equivalent
 - System structure: \`wiki/architecture.md\`
 - Procedures and approvals: \`wiki/engineering.md\`
@@ -59,6 +67,11 @@ export const SAMPLES: Readonly<Record<string, Sample>> = {
 
 - Use existing scripts and suitable approved skills.
 - Use native tools for private notes and plans.
+- Before creating a knowledge document, read \`wiki/README.md\`, any relevant
+  collection index, and search relevant repository files; update an existing
+  accepted source when it already serves the purpose.
+- Load the applicable schema in [wiki/schemas/README.md](wiki/schemas/README.md)
+  when creating or structurally checking a task, exploration, or decision record.
 - Match the request to a task's goal before editing that task. Startup tasks
   are not default records for new work.
 - Store standalone exploration evidence in the directory named by engineering
@@ -169,6 +182,11 @@ jobs:
     text: `wiki/
 ├── README.md
 ├── aad.md
+├── schemas/
+│   ├── README.md
+│   ├── task.schema.md
+│   ├── exploration.schema.md
+│   └── decision.schema.md
 ├── requirements.md
 ├── requirements/
 │   └── password-reset.md
@@ -188,22 +206,23 @@ jobs:
     fromSpec: false,
     text: `# Project Knowledge
 
-Start with [AGENTS.md](../AGENTS.md). Each topic has one accepted source.
+Start with [AGENTS.md](../AGENTS.md). Read this index and search existing sources before creating a knowledge document.
 
-- [Working process](aad.md): AAD 2.2.1
-- [Requirements](requirements.md) and [behavior details](requirements/)
-- [Architecture](architecture.md)
-- [Engineering](engineering.md): setup, checks, approvals, publication
-- [Decisions](decisions/)
-- [Experiments](experiments/)
-- [Tasks](tasks/)
+- [Working process](aad.md): AAD 2.3.0 rules, lifecycle, approvals, and publication
+- [Record schemas](schemas/README.md): task, exploration, and decision record structures
+- [Requirements](requirements.md) and [behavior details](requirements/): accepted behavior and quality targets
+- [Architecture](architecture.md): system boundaries and technology roles
+- [Engineering](engineering.md): setup, checks, approvals, publication, and tools
+- [Decisions](decisions/): architectural decision records and their outcomes
+- [Experiments](experiments/): reusable exploration findings and trial evidence
+- [Tasks](tasks/): shared task goals, progress, and next actions
 `,
   },
   "aad.md": {
     file: "wiki/aad.md",
     fromSpec: false,
     text: `---
-version: 2.2.1
+version: 2.3.0
 ---
 
 # AAD: Agent-Assisted Development
@@ -217,7 +236,334 @@ version: 2.2.1
 …
 ## Latest Change
 
-2.2.1
+2.3.0
+`,
+  },
+  "schemas/": {
+    file: "wiki/schemas/README.md",
+    fromSpec: true,
+    origin: "from wiki/schemas/",
+    text: `# Record Schemas
+
+These Markdown specifications define the accepted structure for AAD records.
+They are human- and agent-readable specifications, not machine-readable schemas,
+and they do not by themselves establish that automated validators exist.
+
+Load the applicable schema when creating or structurally checking a record.
+Record lifecycle, approvals, and publication procedures remain in
+[\`wiki/aad.md\`](../aad.md) and project engineering guidance. Like other project
+documents outside \`wiki/aad.md\`, schemas use Git history rather than separate
+version numbers.
+
+## Schemas
+
+- [\`task.schema.md\`](task.schema.md): Required and optional YAML fields, allowed
+  \`status\` values, required Markdown sections, stable filename ID rule, and
+  template for task records in \`wiki/tasks/\`. Use when creating, updating, or
+  structurally checking a task.
+- [\`exploration.schema.md\`](exploration.schema.md): Required information and
+  recommended template for reusable investigation records in \`wiki/experiments/\`
+  (or the directory named by \`wiki/engineering.md\`). Use when recording or
+  reviewing reusable exploration findings.
+- [\`decision.schema.md\`](decision.schema.md): Required information, allowed
+  status values, and recommended template for architectural decision records in
+  \`wiki/decisions/\`. Use when proposing, updating, or reviewing a decision
+  record.
+`,
+  },
+  "task.schema.md": {
+    file: "wiki/schemas/task.schema.md",
+    fromSpec: true,
+    origin: "from wiki/schemas/",
+    text: `# Task Record Schema
+
+This Markdown specification is the accepted source for the structure of a task
+record in \`wiki/tasks/\`. It is for human and agent readers; automated checks
+depend on the project's configured validator (\`wiki/engineering.md\`).
+
+For task scope, lifecycle transitions, approvals, and publication rules, see
+[\`wiki/aad.md\`](../aad.md).
+
+## Path and Stable ID
+
+- Store each task in \`wiki/tasks/<ID>.md\` (or the project's established task
+  directory).
+- Use the filename without \`.md\` as the task's stable ID (for example \`T-014\`).
+- Once allocated, do not rename the task file to change its ID. Change \`title\`
+  when its label needs correction.
+- Allocate IDs through the method in [Task IDs](../aad.md#task-ids).
+
+## Structure
+
+A task file starts with a YAML header between \`---\` lines for fields that tools
+can read, followed by a Markdown body for people and agents.
+
+### Required YAML Fields
+
+| Field | Meaning |
+|---|---|
+| \`title\` | Short label for the task |
+| \`status\` | Current task state (\`todo\`, \`in_progress\`, \`review\`, or \`done\`) |
+| \`aad_version\` | Guide version (\`MAJOR.MINOR.PATCH\`) read and used for this published task update |
+
+### Optional YAML Fields
+
+\`\`\`yaml
+owner: agent-02
+blocked_by:
+  - T-012
+\`\`\`
+
+| Field | Meaning |
+|---|---|
+| \`owner\` | Worker responsible for the next action; does not assign a permanent role |
+| \`blocked_by\` | YAML list of unfinished existing task IDs that currently prevent progress |
+
+Describe external blockers in \`State\`. For dependency cleanup and validation
+rules, see [Optional Fields](../aad.md#optional-fields).
+
+### Allowed Status Values
+
+| Stored value | Board label | Meaning |
+|---|---|---|
+| \`todo\` | To Do | Work has not started |
+| \`in_progress\` | In Progress | Work has started |
+| \`review\` | In Review | The result waits for review or acceptance |
+| \`done\` | Done | The goal and the quality conditions are met, and the required approvals are complete |
+
+For allowed status transitions, creation states, completion, reopening,
+retention, and cancellation, see [States](../aad.md#states) and
+[Task Creation](../aad.md#task-creation).
+
+### Required Markdown Sections
+
+Each published task must contain these four \`##\` sections:
+
+| Section | Content |
+|---|---|
+| \`Goal\` | Intended result, benefit, and success criteria |
+| \`State\` | Current progress, evidence, blockers, and unresolved questions |
+| \`Next\` | Next activity or action |
+| \`References\` | Relevant sources and work results |
+
+### Section and Link Rules
+
+- Set \`Next\` to \`None\` only when \`status\` is \`done\`. For each other status,
+  \`Next\` must name an action.
+- Write links relative to the task file.
+
+## Minimal Template
+
+The three YAML fields (\`title\`, \`status\`, \`aad_version\`) and the four \`##\`
+section headings (\`Goal\`, \`State\`, \`Next\`, \`References\`) are required. The
+example values and body text below are illustrative (\`wiki/tasks/T-014.md\`):
+
+\`\`\`markdown
+---
+title: Add filtering to the payments table
+status: in_progress
+aad_version: 2.3.0
+---
+
+## Goal
+Help support staff find failed payments without engineering help.
+Add filtering by payment status.
+Preserve keyboard access.
+Meet the response-time target in the UI requirements.
+
+## State
+Filtering is implemented on branch \`T-014-payment-filters\`.
+Unit tests pass.
+Keyboard testing has not run.
+
+## Next
+Test keyboard navigation.
+
+## References
+- [UI requirements](../requirements/ui.md)
+\`\`\`
+
+## Process References
+
+- Scope and when to create or update a task:
+  [Task Selection and Scope](../aad.md#task-selection-and-scope)
+- Resolving pending reviews before new implementation:
+  [Acceptance Before Unrelated Implementation](../aad.md#acceptance-before-unrelated-implementation)
+- Recording branches, revisions, and local changes:
+  [Format](../aad.md#format)
+- Status transitions, completion, reopening, retention, and cancellation:
+  [States](../aad.md#states)
+- Dependency maintenance and validation:
+  [Optional Fields](../aad.md#optional-fields)
+- ID allocation: [Task IDs](../aad.md#task-ids)
+- Initial status rules: [Task Creation](../aad.md#task-creation) and
+  [Record Work After It Starts](../aad.md#record-work-after-it-starts)
+- Combined and task-only publication, change categories, and trusted validation:
+  [Task Publication](../aad.md#task-publication)
+`,
+  },
+  "exploration.schema.md": {
+    file: "wiki/schemas/exploration.schema.md",
+    fromSpec: true,
+    origin: "from wiki/schemas/",
+    text: `# Exploration Record Schema
+
+This Markdown specification is the accepted source for the structure of a shared
+exploration record. It is for human and agent readers, not a machine-readable
+schema or a claim that an automated validator exists.
+
+Store shared exploration records in the directory named by \`wiki/engineering.md\`
+(such as \`wiki/experiments/\`). For exploration procedures, taskless questions,
+and adoption approvals, see [\`wiki/aad.md\`](../aad.md).
+
+## Required Content
+
+Every exploration record must include this information:
+
+| Item | Content |
+|---|---|
+| Question | The question that the investigation answers |
+| Comparison criteria | The criteria used to evaluate the options |
+| Date | The date of the investigation or record |
+| Evidence and source links | Verified findings, measurements, and links to primary sources or experiments |
+| Untested claims | Claims or assumptions that were not verified |
+| Conclusion | The recommended option, or why no option fits |
+| Remaining uncertainty | Open questions, test limits, or unverified conditions |
+
+## Formatting and Compatibility
+
+- No YAML header, record identifier, or extra metadata field is required.
+- The headings in the template below are recommended formatting, not mandatory
+  section names. Existing and new exploration records are valid when they
+  contain the required information.
+- Write links to repository files relative to the exploration record.
+
+## Minimal Template
+
+The required information must be present; the layout and section headings below
+are recommended (\`wiki/experiments/2026-10-02-table-filter-libraries.md\`):
+
+\`\`\`markdown
+# Table filtering options
+
+Date: 2026-10-02
+Question: Which filtering approach meets QUAL-002?
+Criteria: response time at 10,000 rows, keyboard access, new dependencies.
+
+## Evidence
+- [UI requirements](../requirements/ui.md): target is 300 ms at 10,000 rows.
+- Client-side filter: 840 ms median (trial script, commit 4be1c07).
+- Database filter with index: 41 ms median (same script and data).
+
+## Untested claims
+- The search service vendor claims under 20 ms. Not tested.
+
+## Conclusion
+Recommend the database filter. This record does not approve adoption.
+
+## Uncertainty
+Measured on the reference laptop only.
+\`\`\`
+
+## Process References
+
+- Storage location and separation from tasks:
+  [Exploration Records](../aad.md#exploration-records)
+- When a question needs a record vs a conversational answer:
+  [Taskless Exploration](../aad.md#taskless-exploration)
+- When findings update a task or create a new objective:
+  [Task Selection and Scope](../aad.md#task-selection-and-scope)
+- Investigation steps, prototype rules, and adoption approval:
+  [Exploration](../aad.md#exploration)
+`,
+  },
+  "decision.schema.md": {
+    file: "wiki/schemas/decision.schema.md",
+    fromSpec: true,
+    origin: "from wiki/schemas/",
+    text: `# Decision Record Schema
+
+This Markdown specification is the accepted source for the structure of an
+architectural decision record (ADR) in \`wiki/decisions/\` (or the project's
+established equivalent). It is for human and agent readers, not a
+machine-readable schema or a claim that an automated validator exists.
+
+For decision approval and lifecycle rules, see [\`wiki/aad.md\`](../aad.md).
+
+## Required Content
+
+Every decision record must include this information:
+
+| Item | Content |
+|---|---|
+| Problem | The context and problem that requires a significant choice |
+| Chosen approach | The selected option or proposed design |
+| Alternatives | Other options considered |
+| Reasons | Why the chosen approach was selected, or why a rejected proposal was not approved |
+| Consequences | Trade-offs, operational effects, and follow-up obligations |
+| Status | Current decision status (and a link to the replacement when \`superseded\`) |
+| Evidence | Links to supporting experiments, requirements, or primary sources |
+
+## Allowed Statuses
+
+| Status | Meaning |
+|---|---|
+| \`proposed\` | Created for review; awaiting required approval |
+| \`accepted\` | Approved and currently in force |
+| \`rejected\` | Not approved; the record includes the reason |
+| \`superseded\` | Replaced by a later accepted decision; the record links to the replacement |
+
+## Formatting and Compatibility
+
+- No YAML header or new metadata field is required.
+- ADRs use decision IDs and statuses; Git history tracks revisions without
+  separate document version numbers.
+- The headings in the template below are recommended formatting, not mandatory
+  section names. Existing and new decision records are valid when they contain
+  the required information.
+- Write links to repository files relative to the decision record.
+
+## Minimal Template
+
+Start new decision proposals with \`proposed\`. The required information and a
+valid status must be present; the section headings below are recommended
+(\`wiki/decisions/ADR-003-payment-filter-query.md\`):
+
+\`\`\`markdown
+# ADR-003: Filter payments in the database
+
+Status: proposed
+
+## Problem
+Client-side filtering misses QUAL-002 above 5,000 rows.
+
+## Approach
+Filter by status in the API query, with an index on \`status\`.
+
+## Alternatives
+- Client-side filtering: simple, but fails the response-time target.
+- Search service: fast, but adds a new dependency and operations cost.
+
+## Reasons
+Meets QUAL-002 in the trial; no new dependency.
+
+## Consequences
+Needs a migration for the index. Rollback drops the index.
+
+## Evidence
+- [Filter trial](../experiments/2026-10-02-table-filter-libraries.md)
+\`\`\`
+
+## Process References
+
+- Approval rules, recording rejection reasons, and linking replacements:
+  [Decision Records](../aad.md#decision-records)
+- Creating a proposed ADR during implementation:
+  [Implementation](../aad.md#implementation)
+- Document versioning and decision IDs:
+  [Guide Version and Document Changes](../aad.md#8-guide-version-and-document-changes)
+- Maintaining links when decisions are replaced:
+  [Knowledge Maintenance and Safety](../aad.md#10-knowledge-maintenance-and-safety)
 `,
   },
   "requirements.md": {
@@ -293,7 +639,7 @@ Reasons for these choices: [decisions](decisions/).
 - Pending-review limit: <count and scope; default one per project>
 - Explicit review deferrals: <approval, reason, and return condition in task State>
 - Uncertain classifications: <review path and response target>
-- Trusted task checks: <target revision, rules, validator, CI, and all-task-path trigger>
+- Trusted task checks: <target revision, rules, schemas, validator, CI, and all-task-path trigger>
 - Local task checks: <command, shared structural rules, and validation limits>
 - Completion automation: <authorized task-only mechanism, or manual publication>
 - Merge protection: <current-candidate checks and stale-approval controls>
@@ -310,7 +656,8 @@ Reasons for these choices: [decisions](decisions/).
   },
   "decisions/": {
     file: "wiki/decisions/ADR-003-payment-filter-query.md",
-    fromSpec: false,
+    fromSpec: true,
+    origin: "from wiki/schemas/decision.schema.md",
     text: `# ADR-003: Filter payments in the database
 
 Status: proposed
@@ -337,7 +684,8 @@ Needs a migration for the index. Rollback drops the index.
   },
   "experiments/": {
     file: "wiki/experiments/2026-10-02-table-filter-libraries.md",
-    fromSpec: false,
+    fromSpec: true,
+    origin: "from wiki/schemas/exploration.schema.md",
     text: `# Table filtering options
 
 Date: 2026-10-02
@@ -345,6 +693,7 @@ Question: Which filtering approach meets QUAL-002?
 Criteria: response time at 10,000 rows, keyboard access, new dependencies.
 
 ## Evidence
+- [UI requirements](../requirements/ui.md): target is 300 ms at 10,000 rows.
 - Client-side filter: 840 ms median (trial script, commit 4be1c07).
 - Database filter with index: 41 ms median (same script and data).
 
@@ -417,10 +766,11 @@ The originals stay outside Git. Records cite the IDs, not copies.
   "tasks/": {
     file: "wiki/tasks/T-014.md",
     fromSpec: true,
+    origin: "from wiki/schemas/task.schema.md",
     text: `---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.2.1
+aad_version: 2.3.0
 ---
 
 ## Goal

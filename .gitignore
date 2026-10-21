@@ -1,4 +1,5 @@
 node_modules/
 public/js/
 public/aad.md
+public/schemas/
 .DS_Store

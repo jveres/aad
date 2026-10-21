@@ -32,7 +32,7 @@ interface Spec {
   readonly latest: { readonly version: string; readonly items: readonly string[] } | undefined;
 }
 
-let guideVersion = "2.2.1";
+let guideVersion = "2.3.0";
 
 // ── spec ─────────────────────────────────────────────────────────────────────
 
@@ -82,8 +82,9 @@ async function loadSpec(): Promise<void> {
 function renderVersion(): void {
   for (const el of document.querySelectorAll("[data-version]")) el.textContent = `v${guideVersion}`;
   $("#adopt-cmd").textContent = [
-    "mkdir -p wiki/tasks",
+    "mkdir -p wiki/schemas wiki/tasks",
     `curl -fsSL https://raw.githubusercontent.com/${REPO}/v${guideVersion}/aad.md -o wiki/aad.md`,
+    `for f in README.md task.schema.md exploration.schema.md decision.schema.md; do curl -fsSL "https://raw.githubusercontent.com/${REPO}/v${guideVersion}/wiki/schemas/$f" -o "wiki/schemas/$f"; done`,
   ].join(" && \\\n  ");
   $("#adopt-prompt").textContent = adoptPrompt(REPO, guideVersion);
   const current = $<HTMLInputElement>("[data-read-current]");
@@ -217,7 +218,7 @@ function renderTree(): void {
             h(
               "p",
               { class: "label" },
-              `example · ${sample.file} · ${sample.fromSpec ? "from aad.md" : "illustrative"}`,
+              `example · ${sample.file} · ${sample.origin ?? (sample.fromSpec ? "from aad.md" : "illustrative")}`,
             ),
             renderSample(sample.text),
           ]
