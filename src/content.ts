@@ -124,7 +124,7 @@ export const TREE: readonly TreeNode[] = [
     depth: 2,
     optional: true,
     purpose:
-      "Optional detailed behavior specifications: a stable ID, one testable rule per bullet, When/Then examples, and Limits. Cite the ID in test names. Recommended, not required.",
+      "Optional detailed behavior files. New and revised contracts require stable domain-specific IDs. Bullets, When/Then examples, and Limits are recommended formatting.",
     source: "Required behavior and user outcomes",
   },
   {

@@ -117,7 +117,7 @@ export function filterByStatus(
 import { openResetLink } from "../src/auth/reset.js";
 
 // Cite the behavior ID; the requirement does not link back to tests.
-test("BEH-007: a link opened at 60 minutes shows Link expired", () => {
+test("AUTH-007: a link opened at 60 minutes shows Link expired", () => {
   const page = openResetLink({ issuedAt: 0, now: 60 * 60_000, used: false });
   expect(page.message).toBe("Link expired");
   expect(page.offersNewLink).toBe(true);
@@ -571,6 +571,10 @@ Needs a migration for the index. Rollback drops the index.
     fromSpec: false,
     text: `# Requirements
 
+Prefixes: AUTH identifies authentication contracts; UX identifies interaction
+contracts; QUAL preserves existing quality contract IDs. Allocate new IDs through
+the shared process in engineering guidance. Never reuse retired IDs.
+
 ## Quality
 
 - QUAL-002: The payments table shows filtered results within 300 ms
@@ -579,14 +583,14 @@ Needs a migration for the index. Rollback drops the index.
 
 ## Behavior
 
-- [Password reset link](requirements/password-reset.md): BEH-007
-- [Payment status filter](requirements/payment-filter.md): BEH-012
+- [Password reset link](requirements/password-reset.md): AUTH-007
+- [Payment status filter](requirements/payment-filter.md): UX-012
 `,
   },
   "requirements/": {
     file: "wiki/requirements/password-reset.md",
     fromSpec: true,
-    text: `## BEH-007 Password reset link
+    text: `## AUTH-007 Password reset link
 
 A password reset link lets a user set a new password for a limited time.
 

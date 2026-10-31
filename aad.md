@@ -1,5 +1,5 @@
 ---
-version: 2.3.0
+version: 2.3.1
 ---
 
 # AAD: Agent-Assisted Development
@@ -185,6 +185,33 @@ Apply these rules:
    under the task selection rules.
 5. For an approved behavior change, update the requirement and its tests in the
    same change. Record manual checks and known gaps where automation is absent.
+6. Give every new or revised behavior and quality contract a stable, unique
+   ID, whether checked automatically or manually. Define context-specific
+   prefixes in the requirements index, such as `UX` for interaction, `UI` for
+   presentation, and `DUR` for durability. Allocate IDs through the project's
+   shared allocation method. Preserve existing IDs, including older prefixes,
+   and never reuse retired IDs. A heading can group contracts without its own
+   ID; each normative statement must belong to an identified contract.
+7. When an approved fix establishes reusable observable behavior, record that
+   behavior in requirements. Interaction outcomes belong to UX requirements;
+   visual presentation belongs to UI requirements. Keep build, toolchain, and
+   verification procedures in engineering guidance. Link supporting evidence
+   rather than copying an incident narrative into either rule.
+8. During an audit, compare requirements with code, tests, and other accepted
+   sources. Resolve findings within the authorized scope and record evidence
+   and remaining gaps. Current implementation is evidence of observed behavior,
+   not automatic authority for intended behavior. Correct requirements to match
+   it only with the approval required by rule 3; otherwise retain the conflict
+   for a decision. An audit is not complete while its promised resolutions
+   remain open.
+9. Automate checks for ID presence, uniqueness, declared prefixes, nonempty
+   contracts, and valid references in the project's existing check command.
+   Record enforcement gaps. Structural checks do not prove semantic coverage,
+   consistency, or test completeness.
+
+Apply the ID and validation obligations to new and revised requirements after
+adoption. Existing accepted records remain valid. Backfilling the whole corpus
+requires a separately scoped audit; do not silently renumber historical IDs.
 
 The approval required for an accepted behavior change does not by itself make
 the publication task-only. Requirements and their implementation and tests may
@@ -192,11 +219,9 @@ share a publication after the required approval. If that publication also
 changes a task's goal or success criteria, publish the task change separately
 under the task-only rules.
 
-For behavior that needs automated tests, this format is recommended, not
-required:
+IDs are required as specified above. The following presentation format is
+recommended, not required:
 
-- Give each behavior a stable ID, such as `BEH-007`. If used, allocate IDs through
-  the method defined for task IDs and never reuse a retired behavior ID.
 - Write a short description, then the rules as bullets: one testable statement
   per bullet.
 - Add examples as bullets: **When** an event occurs, **then** a result follows.
@@ -211,7 +236,7 @@ AAD does not require Gherkin, a new test framework, or generated tests. This
 example uses a neutral domain; it is not a requirement for the adopting project:
 
 ```markdown
-## BEH-007 Password reset link
+## AUTH-007 Password reset link
 
 A password reset link lets a user set a new password for a limited time.
 
@@ -1457,15 +1482,21 @@ Add documents and tools when repeated work shows a need.
 
 ## Latest Change
 
-2.3.0
+2.3.1
 
-- Move task, exploration, and decision record structures into dedicated Markdown
-  schemas under `wiki/schemas/`, with minimal templates.
-- Require index lookup and repository search before creating knowledge documents.
-- Define lightweight main and collection indexes, maintained with affected changes.
-- Update agent entry points, adoption, and applicable trusted validation for schemas.
+- Require stable, domain-specific IDs for new and revised requirement contracts.
+- Distinguish reusable UX/UI behavior from engineering procedures when recording
+  lessons from fixes.
+- Require evidence and authorized resolution of audit findings; implementation
+  alone does not override accepted requirements.
+- Require mechanical ID and reference checks, with explicit enforcement limits.
 
-Existing records remain valid. Task states, transitions, approval authority,
-publication paths, and startup-reading requirements are unchanged. No record
-migration is required. Publish schema and validator changes before record edits
-that depend on them.
+These obligations apply prospectively. Existing records and IDs remain valid;
+backfilling requires a separately scoped audit. Lifecycle, approval authority,
+and publication paths are unchanged. Adopters must update applicable tooling
+or record enforcement gaps.
+
+Release exception: the owner explicitly requested patch tag 2.3.1 for this
+change. Under the normal versioning table, the new prospective obligations
+would require a minor release. This one-release exception does not change that
+rule or describe the obligations as wording-only corrections.
