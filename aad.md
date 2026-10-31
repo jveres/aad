@@ -1,5 +1,5 @@
 ---
-version: 2.3.1
+version: 2.3.2
 ---
 
 # AAD: Agent-Assisted Development
@@ -192,11 +192,11 @@ Apply these rules:
    shared allocation method. Preserve existing IDs, including older prefixes,
    and never reuse retired IDs. A heading can group contracts without its own
    ID; each normative statement must belong to an identified contract.
-7. When an approved fix establishes reusable observable behavior, record that
-   behavior in requirements. Interaction outcomes belong to UX requirements;
-   visual presentation belongs to UI requirements. Keep build, toolchain, and
-   verification procedures in engineering guidance. Link supporting evidence
-   rather than copying an incident narrative into either rule.
+7. Record reusable findings in their accepted source: observable behavior in
+   requirements, development procedures in engineering guidance, and reasons
+   for significant choices in decision records. Apply the existing approval
+   rules before changing accepted sources. Link supporting evidence rather
+   than duplicating it.
 8. During an audit, compare requirements with code, tests, and other accepted
    sources. Resolve findings within the authorized scope and record evidence
    and remaining gaps. Current implementation is evidence of observed behavior,
@@ -1482,21 +1482,15 @@ Add documents and tools when repeated work shows a need.
 
 ## Latest Change
 
-2.3.1
+2.3.2
 
-- Require stable, domain-specific IDs for new and revised requirement contracts.
-- Distinguish reusable UX/UI behavior from engineering procedures when recording
-  lessons from fixes.
-- Require evidence and authorized resolution of audit findings; implementation
-  alone does not override accepted requirements.
-- Require mechanical ID and reference checks, with explicit enforcement limits.
+- Generalize the source-placement wording to observable behavior, development
+  procedures, and reasons for significant choices, consistent with Accepted
+  Sources. Remove the prescribed UX/UI categorization and fix-specific framing.
+- Keep requirement prefixes project-defined; UX, UI, and DUR remain examples.
 
-These obligations apply prospectively. Existing records and IDs remain valid;
-backfilling requires a separately scoped audit. Lifecycle, approval authority,
-and publication paths are unchanged. Adopters must update applicable tooling
-or record enforcement gaps.
-
-Release exception: the owner explicitly requested patch tag 2.3.1 for this
-change. Under the normal versioning table, the new prospective obligations
-would require a minor release. This one-release exception does not change that
-rule or describe the obligations as wording-only corrections.
+This patch corrects the wording to match the existing accepted-source and
+approval rules. Requirement-ID obligations, existing records, lifecycle,
+approval authority, and publication paths are unchanged. The 2.3.1 release
+exception remains recorded in that tag and its history; this patch does not
+extend it.
