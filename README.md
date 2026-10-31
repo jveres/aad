@@ -1,6 +1,6 @@
 # AAD: Agent-Assisted Development
 
-[![spec](https://img.shields.io/badge/spec-v2.3.2-c6f26a?labelColor=0c0e0f)](aad.md)
+[![spec](https://img.shields.io/badge/spec-v2.3.1-c6f26a?labelColor=0c0e0f)](aad.md)
 [![pages](https://github.com/jveres/aad/actions/workflows/pages.yml/badge.svg)](https://github.com/jveres/aad/actions/workflows/pages.yml)
 
 AAD is a working process for software projects where **people and AI agents
@@ -10,7 +10,7 @@ A *worker* is a person or an agent. Each worker must be able to find the rules,
 understand the task, and continue the work **without earlier conversations**.
 People remain responsible for project policies, access, and approval decisions.
 
-- **Spec:** [`aad.md`](aad.md) (version 2.3.2) and record schemas in [`wiki/schemas/`](wiki/schemas/README.md). These are the accepted sources. The README and the site summarize them.
+- **Spec:** [`aad.md`](aad.md) (version 2.3.1) and record schemas in [`wiki/schemas/`](wiki/schemas/README.md). These are the accepted sources. The README and the site summarize them.
 - **Site:** <https://jveres.github.io/aad/>. An interactive introduction with a state machine, a task linter, and a publication classifier.
 
 ---
@@ -39,9 +39,9 @@ Open an agent in the project folder and paste this prompt. The folder can be
 empty or an existing project. You do not need to download anything first.
 
 ```text
-Set up AAD (Agent-Assisted Development) 2.3.2 in this project folder. The folder can be empty or an existing project.
+Set up AAD (Agent-Assisted Development) 2.3.1 in this project folder. The folder can be empty or an existing project.
 
-1. Download the guide and schemas: mkdir -p wiki/schemas && curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.2/aad.md -o wiki/aad.md && for f in README.md task.schema.md exploration.schema.md decision.schema.md; do curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.2/wiki/schemas/$f" -o "wiki/schemas/$f"; done
+1. Download the guide and schemas: mkdir -p wiki/schemas && curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.1/aad.md -o wiki/aad.md && for f in README.md task.schema.md exploration.schema.md decision.schema.md; do curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.1/wiki/schemas/$f" -o "wiki/schemas/$f"; done
    If wiki/aad.md already exists, compare the versions and ask me before you replace it. Read the full guide. §13 Adoption is the checklist; §9 has the AGENTS.md template.
 2. Examine the folder: Git repository, remote and default branch, README, AGENTS.md, CLAUDE.md and other agent instruction files, docs, build and test commands, CI. If there is no Git repository, ask me before you run git init. Do not overwrite or move existing files. Extend them, or link to existing equivalents.
 3. Create or extend AGENTS.md, wiki/README.md (linking wiki/schemas/README.md and the knowledge collections), and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, task ID allocation, publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
@@ -58,9 +58,9 @@ copy. The tag matches the AAD version:
 
 ```sh
 mkdir -p wiki/schemas wiki/tasks && \
-  curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.2/aad.md -o wiki/aad.md && \
+  curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.1/aad.md -o wiki/aad.md && \
   for f in README.md task.schema.md exploration.schema.md decision.schema.md; do \
-    curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.2/wiki/schemas/$f" -o "wiki/schemas/$f"; \
+    curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.1/wiki/schemas/$f" -o "wiki/schemas/$f"; \
   done
 ```
 
@@ -166,7 +166,7 @@ a Markdown body for people:
 ---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.3.2
+aad_version: 2.3.1
 ---
 
 ## Goal

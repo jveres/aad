@@ -1,5 +1,5 @@
 ---
-version: 2.3.2
+version: 2.3.1
 ---
 
 # AAD: Agent-Assisted Development
@@ -1482,15 +1482,22 @@ Add documents and tools when repeated work shows a need.
 
 ## Latest Change
 
-2.3.2
+2.3.1
 
-- Generalize the source-placement wording to observable behavior, development
-  procedures, and reasons for significant choices, consistent with Accepted
-  Sources. Remove the prescribed UX/UI categorization and fix-specific framing.
-- Keep requirement prefixes project-defined; UX, UI, and DUR remain examples.
+- Require stable, domain-specific IDs for new and revised requirement contracts.
+- Record reusable findings in their accepted source: behavior in requirements,
+  development procedures in engineering guidance, and reasons for significant
+  choices in decision records. Link supporting evidence rather than duplicating it.
+- Require evidence and authorized resolution of audit findings; implementation
+  alone does not override accepted requirements.
+- Require mechanical ID and reference checks, with explicit enforcement limits.
 
-This patch corrects the wording to match the existing accepted-source and
-approval rules. Requirement-ID obligations, existing records, lifecycle,
-approval authority, and publication paths are unchanged. The 2.3.1 release
-exception remains recorded in that tag and its history; this patch does not
-extend it.
+These obligations apply prospectively. Existing records and IDs remain valid;
+backfilling requires a separately scoped audit. Lifecycle, approval authority,
+and publication paths are unchanged. Adopters must update applicable tooling
+or record enforcement gaps.
+
+Release exception: the owner explicitly requested patch tag 2.3.1 for this
+change. Under the normal versioning table, the new prospective obligations
+would require a minor release. This one-release exception does not change that
+rule or describe the obligations as wording-only corrections.
