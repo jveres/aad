@@ -13,6 +13,7 @@ const types = {
   ".map": "application/json",
   ".md": "text/markdown; charset=utf-8",
   ".svg": "image/svg+xml",
+  ".woff2": "font/woff2",
 };
 
 createServer((req, res) => {

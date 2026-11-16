@@ -774,15 +774,52 @@ function renderAdoption(): void {
 
 function initChrome(): void {
   const root = document.documentElement;
+  type ThemeMode = "system" | "light" | "dark";
+  const applyTheme = (mode: ThemeMode) => {
+    if (mode === "light" || mode === "dark") root.dataset.theme = mode;
+    else delete root.dataset.theme;
+    for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-theme-set]")) {
+      btn.setAttribute("aria-pressed", String(btn.dataset.themeSet === mode));
+    }
+  };
   const saved = store.get("aad.theme");
-  if (saved === "light" || saved === "dark") root.dataset.theme = saved;
-  $("[data-theme-toggle]").addEventListener("click", () => {
-    const dark = root.dataset.theme
-      ? root.dataset.theme === "dark"
-      : matchMedia("(prefers-color-scheme: dark)").matches;
-    root.dataset.theme = dark ? "light" : "dark";
-    store.set("aad.theme", root.dataset.theme);
-  });
+  applyTheme(saved === "light" || saved === "dark" ? saved : "system");
+  for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-theme-set]")) {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.themeSet;
+      if (mode === "system" || mode === "light" || mode === "dark") {
+        applyTheme(mode);
+        store.set("aad.theme", mode);
+      }
+    });
+  }
+  for (const tab of document.querySelectorAll<HTMLButtonElement>("[data-adopt-tab]")) {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.adoptTab;
+      for (const panel of document.querySelectorAll<HTMLElement>("[data-adopt-panel]")) {
+        panel.hidden = panel.dataset.adoptPanel !== target;
+      }
+      for (const t of document.querySelectorAll<HTMLButtonElement>("[data-adopt-tab]")) {
+        t.setAttribute("aria-selected", String(t.dataset.adoptTab === target));
+      }
+    });
+  }
+  const navLinks = [...document.querySelectorAll<HTMLAnchorElement>(".bar nav a")];
+  if ("IntersectionObserver" in window && navLinks.length > 0) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            const id = `#${e.target.id}`;
+            for (const a of navLinks)
+              a.toggleAttribute("aria-current", a.getAttribute("href") === id);
+          }
+        }
+      },
+      { rootMargin: "-20% 0px -65% 0px" },
+    );
+    for (const sec of document.querySelectorAll("main section[id]")) obs.observe(sec);
+  }
   for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
     btn.addEventListener("click", async () => {
       const src = document.querySelector(btn.dataset.copy ?? "");
