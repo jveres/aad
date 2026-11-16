@@ -43,7 +43,7 @@ Question: Which filtering approach meets QUAL-002?
 Criteria: response time at 10,000 rows, keyboard access, new dependencies.
 
 ## Evidence
-- [UI requirements](../requirements/ui.md): target is 300 ms at 10,000 rows.
+- [Requirements](../requirements.md): QUAL-002 target is 300 ms at 10,000 rows.
 - Client-side filter: 840 ms median (trial script, commit 4be1c07).
 - Database filter with index: 41 ms median (same script and data).
 

@@ -57,8 +57,25 @@ export function lintTask(text: string, options: LintOptions = {}): LintResult {
 
   for (const name of REQUIRED_FIELDS) {
     const f = fields.get(name);
-    if (!f || (f.value === "" && f.items.length === 0)) {
+    if (!f) {
       report("error", 1, "format/required-field", `Required header field \`${name}\` is missing.`);
+    } else if (f.items.length > 0) {
+      report("error", f.line, "format/yaml", `\`${name}\` must be a single value, not a list.`);
+    } else if (f.value === "") {
+      report(
+        "error",
+        f.line,
+        "format/required-field",
+        `Required header field \`${name}\` is empty.`,
+      );
+    }
+  }
+  const owner = fields.get("owner");
+  if (owner) {
+    if (owner.items.length > 0) {
+      report("error", owner.line, "format/yaml", "`owner` must be a single value, not a list.");
+    } else if (owner.value === "") {
+      report("warning", owner.line, "format/yaml", "`owner` is empty; omit it when unassigned.");
     }
   }
   for (const [name, f] of fields) {
@@ -104,6 +121,21 @@ export function lintTask(text: string, options: LintOptions = {}): LintResult {
 
   const blocked = fields.get("blocked_by");
   if (blocked) {
+    if (blocked.value !== "") {
+      report(
+        "error",
+        blocked.line,
+        "format/yaml",
+        "`blocked_by` must be a YAML list using `- <ID>` lines.",
+      );
+    } else if (blocked.items.length === 0) {
+      report(
+        "warning",
+        blocked.line,
+        "format/yaml",
+        "`blocked_by` has no items; omit it when unblocked.",
+      );
+    }
     const self = options.fileName?.replace(/\.md$/, "");
     const seen = new Set<string>();
     for (const item of blocked.items) {
@@ -125,7 +157,8 @@ export function lintTask(text: string, options: LintOptions = {}): LintResult {
     }
   }
 
-  const sections = parseSections(lines, end + 1);
+  const sections = parseSections(lines, end + 1, report);
+  checkBodyLinks(lines, end + 1, report);
   for (const name of SECTIONS) {
     const s = sections.get(name);
     if (!s) {
@@ -205,26 +238,68 @@ function parseHeader(
   return fields;
 }
 
-function parseSections(lines: readonly string[], start: number) {
+function parseSections(
+  lines: readonly string[],
+  start: number,
+  report: (s: Severity, line: number, rule: string, msg: string) => void,
+) {
   const sections = new Map<string, { line: number; body: string }>();
   let name: string | undefined;
   let body: string[] = [];
   let line = 0;
+  let inFence = false;
   const flush = () => {
     if (name !== undefined && !sections.has(name))
       sections.set(name, { line, body: body.join("\n") });
   };
   for (let i = start; i < lines.length; i++) {
-    const h = /^##\s+(.+?)\s*$/.exec(lines[i] ?? "");
+    const raw = lines[i] ?? "";
+    if (/^(`{3,}|~{3,})/.test(raw.trimStart())) {
+      inFence = !inFence;
+      body.push(raw);
+      continue;
+    }
+    const h = !inFence ? /^##\s+(.+?)\s*$/.exec(raw) : null;
     if (h?.[1]) {
       flush();
+      if (sections.has(h[1])) {
+        report("error", i + 1, "format/section-duplicate", `Duplicate section \`## ${h[1]}\`.`);
+      }
       name = h[1];
       body = [];
       line = i + 1;
-    } else body.push(lines[i] ?? "");
+    } else body.push(raw);
   }
   flush();
   return sections;
+}
+
+function checkBodyLinks(
+  lines: readonly string[],
+  start: number,
+  report: (s: Severity, line: number, rule: string, msg: string) => void,
+): void {
+  let inFence = false;
+  for (let i = start; i < lines.length; i++) {
+    const raw = lines[i] ?? "";
+    if (/^(`{3,}|~{3,})/.test(raw.trimStart())) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    for (const m of raw.matchAll(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
+      const target = m[1] ?? "";
+      if (!target || target.startsWith("#") || /^[A-Za-z][A-Za-z0-9+.-]*:/.test(target)) continue;
+      if (target.startsWith("/") || /^wiki\//.test(target)) {
+        report(
+          "warning",
+          i + 1,
+          "format/relative-link",
+          `Write repository links relative to the task file (for example \`../...\`), not \`${target}\`.`,
+        );
+      }
+    }
+  }
 }
 
 function unquote(v: string): string {

@@ -158,6 +158,14 @@ export const CHANGES: readonly ChangeOption[] = [
     kind: "requirement",
     note: "Routine after review of its meaning.",
   },
+  {
+    id: "req-invalid",
+    group: "Requirements",
+    label: "New or revised contract lacks a valid ID or has a broken reference",
+    classification: "invalid",
+    kind: "requirement",
+    note: "Invalid. Give new and revised contracts stable, unique IDs with declared prefixes and valid references.",
+  },
 ];
 
 export interface PublicationVerdict {
@@ -203,7 +211,9 @@ export function classifyCandidate(ids: readonly string[]): PublicationVerdict | 
       path =
         taskOnly.length > 0
           ? "Task-only publication after authorized approval."
-          : "Publish after authorized review of the meaning change and validation.";
+          : touchesTasks && other.length > 0
+            ? "Combined publication allowed after authorized review of the meaning change and validation. Keep task edits in their own commit."
+            : "Publish after authorized review of the meaning change and validation.";
       steps.push("Get authorized approval; renew it if reviewed content or scope changes.");
       break;
     default:
@@ -213,6 +223,14 @@ export function classifyCandidate(ids: readonly string[]): PublicationVerdict | 
           : touchesTasks
             ? "Task-only publication after validation."
             : "Publish through the documented method.";
+  }
+  if (
+    touchesTasks &&
+    other.length > 0 &&
+    classification !== "invalid" &&
+    classification !== "unclassified"
+  ) {
+    steps.push("Keep routine task edits in their own commit inside the combined publication.");
   }
   if (touchesTasks && classification !== "invalid") {
     steps.push("Validate against the current shared task, not only the PR base.");

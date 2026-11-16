@@ -1,5 +1,5 @@
 ---
-version: 2.3.1
+version: 2.3.2
 ---
 
 # AAD: Agent-Assisted Development
@@ -39,9 +39,9 @@ This table links to the governing rules; it does not replace them.
 | Answer a bounded question | Conversation, or an exploration record for reusable findings | [Taskless Exploration](#taskless-exploration) |
 | Publish progress or submit a result | Evidence with a short task summary | [Task Publication](#task-publication); only routine task edits may accompany implementation |
 | Propose behavior | Clearly marked proposal, separate from accepted requirements | [Behavior Requirements](#behavior-requirements) |
-| Change accepted behavior | Requirements and tests in the same change | Required behavior-change approval; task-goal edits remain task-only |
+| Change accepted behavior | Requirements and tests in the same change | [Behavior Requirements](#behavior-requirements); required behavior-change approval; task-goal edits remain task-only |
 | Hand off for acceptance | Task, revisions, verification, limits, and decision needed | [Acceptance Before Unrelated Implementation](#acceptance-before-unrelated-implementation) |
-| Complete, reopen, cancel, or change a task goal | Task-only publication | Required authorized approval and validation |
+| Complete, reopen, cancel, or change a task goal | Task-only publication | [Task Publication](#task-publication); required authorized approval and validation |
 
 ## 3. Repository and Knowledge
 
@@ -151,7 +151,7 @@ investigation. Neither record approves adoption.
 
 CI means continuous integration. CI does automated builds and tests after changes.
 
-Put requirements in policy, mechanics in configuration, and reasons in decision records. A written rule does not enforce itself.
+Put requirements in policy, mechanics in configuration, and reasons in decision records. Record reusable findings in their accepted source and link supporting evidence rather than duplicating it; see [Behavior Requirements](#behavior-requirements). A written rule does not enforce itself.
 
 If sources disagree within a tracked task, record the conflict in its `State`.
 For work without a task, follow the [taskless exploration rule](#taskless-exploration).
@@ -191,7 +191,7 @@ Apply these rules:
    presentation, and `DUR` for durability. Allocate IDs through the project's
    shared allocation method. Preserve existing IDs, including older prefixes,
    and never reuse retired IDs. A heading can group contracts without its own
-   ID; each normative statement must belong to an identified contract.
+   ID; each requirement statement must belong to an identified contract.
 7. Record reusable findings in their accepted source: observable behavior in
    requirements, development procedures in engineering guidance, and reasons
    for significant choices in decision records. Apply the existing approval
@@ -210,8 +210,8 @@ Apply these rules:
    consistency, or test completeness.
 
 Apply the ID and validation obligations to new and revised requirements after
-adoption. Existing accepted records remain valid. Backfilling the whole corpus
-requires a separately scoped audit; do not silently renumber historical IDs.
+adoption. Existing accepted records remain valid. Adding IDs to all existing
+records requires a separately scoped audit; do not silently renumber historical IDs.
 
 The approval required for an accepted behavior change does not by itself make
 the publication task-only. Requirements and their implementation and tests may
@@ -607,8 +607,10 @@ A change to accepted requirements also needs review of its meaning, whatever
 other files it changes. Classify a change that adds, removes, or alters a
 behavior or quality obligation as approval-sensitive under
 [Behavior Requirements](#behavior-requirements). Classify a wording correction
-that keeps the meaning as routine. Include this result when you classify the
-pull request.
+that keeps the meaning as routine. Classify a new or revised contract that fails
+required ID or reference checks (missing, duplicate, undeclared, or retired ID,
+empty contract, or broken reference) as invalid until corrected. Include this
+result when you classify the pull request.
 
 Allow combined publication only within the limits above. Apply these checks to
 the complete proposed task state, whatever other files the candidate changes:
@@ -1280,6 +1282,10 @@ Adapt this template to the paths of the project:
   are not default records for new work.
 - Store standalone exploration evidence in the directory named by engineering
   guidance; do not add unrelated research to a task.
+- Record reusable findings in their accepted source (`wiki/requirements.md`,
+  `wiki/engineering.md`, or `wiki/decisions/`) after required approvals, and
+  link supporting evidence rather than duplicating it. Give new and revised
+  requirement contracts stable IDs.
 - Publish task updates through the method in `wiki/engineering.md`.
 - Keep task edits in separate commits. Combine only routine task changes with
   implementation; publish approval-sensitive task changes separately.
@@ -1292,7 +1298,7 @@ Adapt this template to the paths of the project:
 
 ## Finish
 
-- Do the required checks.
+- Do the required checks and complete the audit before each push.
 - Report results, errors, and omitted checks.
 - Update the affected project knowledge.
 - For tracked work, follow the update points in Continue Work. For a
@@ -1385,9 +1391,9 @@ Start with one small task.
 1. Add this guide as `wiki/aad.md` and install the record schemas under `wiki/schemas/`. Reuse equivalent established project locations where appropriate, updating all links consistently.
 2. Create `AGENTS.md` and `wiki/README.md`, linking `wiki/schemas/README.md` and the project's knowledge collections.
 3. Document setup, checks, approvals, and completion rules.
-4. Define task ID allocation.
+4. Define shared ID allocation for tasks and requirement contracts.
 5. Name the accepted baseline and combined and task-only publication methods.
-6. Configure trusted task checks for both publication paths. Record any gaps.
+6. Configure trusted task checks for both publication paths, and automated requirement ID and reference checks. Record any gaps.
 7. Record essential requirements and decisions.
 8. Record approved skills and tools.
 9. Record the selected ASD-STE100 issue.
@@ -1407,7 +1413,7 @@ A template with unresolved placeholders does not establish conformance.
 
 ## Shared work
 - Accepted baseline: <repository/default branch or local-only branch and limits>
-- Task ID allocation: <shared allocator>
+- Shared ID allocation: <shared allocator for tasks, requirement contracts, and records>
 - Publication: <combined and task-only paths, with separate task commits>
 
 ## Review and publication
@@ -1423,7 +1429,7 @@ A template with unresolved placeholders does not establish conformance.
 - Authorized bypasses: <mechanisms and limits, or none>
 
 ## Verification and operation
-- Setup and check profiles: <task-only, docs, implementation, checkpoint>
+- Setup and check profiles: <task-only, docs, requirement ID/reference checks, implementation, checkpoint>
 - Checkpoint assessment: <triggers, measurements, IDs, and recovery commands>
 - Sensitive actions: <approval rules and access limits>
 - Approved skills: <source, revision, scope, and setup>
@@ -1477,27 +1483,22 @@ Test against current shared state with identifiable candidate revisions.
 | Accepted requirement change accompanies implementation and tests | Permit after required approval; actual task-goal edits remain task-only |
 | Clearly marked behavior proposal remains within the task goal | Permit routine recording without approving adoption or implementation |
 | Completion publication is automated | Require authorized acceptance, trusted validation, and a separate task-only publication |
+| New or revised requirement contract lacks a valid, unique ID or declared prefix | Reject in checks; preserve unchanged legacy IDs until a separately scoped audit |
+| Audit finds implementation differs from an accepted requirement | Treat code as observed behavior only; require behavior-change approval to change the requirement, or retain the conflict for a decision |
+| Work produces a reusable finding | Record in its accepted source (requirements, engineering, or decision record) and link supporting evidence |
 
 Add documents and tools when repeated work shows a need.
 
 ## Latest Change
 
-2.3.1
+2.3.2
 
-- Require stable, domain-specific IDs for new and revised requirement contracts.
-- Record reusable findings in their accepted source: behavior in requirements,
-  development procedures in engineering guidance, and reasons for significant
-  choices in decision records. Link supporting evidence rather than duplicating it.
-- Require evidence and authorized resolution of audit findings; implementation
-  alone does not override accepted requirements.
-- Require mechanical ID and reference checks, with explicit enforcement limits.
+- Align the adoption checklist, minimal `engineering.md` outline, `AGENTS.md`
+  template, and decision cases with the requirement contract ID, reusable-finding
+  placement, and audit obligations from 2.3.1.
+- Clarify that a new or revised requirement contract failing required ID or
+  reference checks is classified as `invalid` until corrected.
+- Add missing Working Reference section links, align ASD-STE100 wording, and
+  synchronize record schema examples and relative-link wording.
 
-These obligations apply prospectively. Existing records and IDs remain valid;
-backfilling requires a separately scoped audit. Lifecycle, approval authority,
-and publication paths are unchanged. Adopters must update applicable tooling
-or record enforcement gaps.
-
-Release exception: the owner explicitly requested patch tag 2.3.1 for this
-change. Under the normal versioning table, the new prospective obligations
-would require a minor release. This one-release exception does not change that
-rule or describe the obligations as wording-only corrections.
+No record format, lifecycle, approval authority, or publication rule changed.

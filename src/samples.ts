@@ -76,6 +76,10 @@ export const SAMPLES: Readonly<Record<string, Sample>> = {
   are not default records for new work.
 - Store standalone exploration evidence in the directory named by engineering
   guidance; do not add unrelated research to a task.
+- Record reusable findings in their accepted source (\`wiki/requirements.md\`,
+  \`wiki/engineering.md\`, or \`wiki/decisions/\`) after required approvals, and
+  link supporting evidence rather than duplicating it. Give new and revised
+  requirement contracts stable IDs.
 - Publish task updates through the method in \`wiki/engineering.md\`.
 - Keep task edits in separate commits. Combine only routine task changes with
   implementation; publish approval-sensitive task changes separately.
@@ -88,7 +92,7 @@ export const SAMPLES: Readonly<Record<string, Sample>> = {
 
 ## Finish
 
-- Do the required checks.
+- Do the required checks and complete the audit before each push.
 - Report results, errors, and omitted checks.
 - Update the affected project knowledge.
 - For tracked work, follow the update points in Continue Work. For a
@@ -148,7 +152,7 @@ node tools/validate-tasks.js --target "$target" --candidate HEAD
     "check:tasks": "sh scripts/check-tasks.sh"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.8",
     "typescript": "7.0.2",
     "vitest": "4.0.0"
   }
@@ -189,7 +193,8 @@ jobs:
 │   └── decision.schema.md
 ├── requirements.md
 ├── requirements/
-│   └── password-reset.md
+│   ├── password-reset.md
+│   └── payment-filter.md
 ├── architecture.md
 ├── engineering.md
 ├── decisions/
@@ -208,7 +213,7 @@ jobs:
 
 Start with [AGENTS.md](../AGENTS.md). Read this index and search existing sources before creating a knowledge document.
 
-- [Working process](aad.md): AAD 2.3.0 rules, lifecycle, approvals, and publication
+- [Working process](aad.md): AAD 2.3.2 rules, lifecycle, approvals, and publication
 - [Record schemas](schemas/README.md): task, exploration, and decision record structures
 - [Requirements](requirements.md) and [behavior details](requirements/): accepted behavior and quality targets
 - [Architecture](architecture.md): system boundaries and technology roles
@@ -222,7 +227,7 @@ Start with [AGENTS.md](../AGENTS.md). Read this index and search existing source
     file: "wiki/aad.md",
     fromSpec: false,
     text: `---
-version: 2.3.0
+version: 2.3.2
 ---
 
 # AAD: Agent-Assisted Development
@@ -236,7 +241,7 @@ version: 2.3.0
 …
 ## Latest Change
 
-2.3.0
+2.3.2
 `,
   },
   "schemas/": {
@@ -350,7 +355,7 @@ Each published task must contain these four \`##\` sections:
 
 - Set \`Next\` to \`None\` only when \`status\` is \`done\`. For each other status,
   \`Next\` must name an action.
-- Write links relative to the task file.
+- Write links to repository files relative to the task file.
 
 ## Minimal Template
 
@@ -362,14 +367,14 @@ example values and body text below are illustrative (\`wiki/tasks/T-014.md\`):
 ---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.3.0
+aad_version: 2.3.2
 ---
 
 ## Goal
 Help support staff find failed payments without engineering help.
 Add filtering by payment status.
 Preserve keyboard access.
-Meet the response-time target in the UI requirements.
+Meet the response-time target in the requirements.
 
 ## State
 Filtering is implemented on branch \`T-014-payment-filters\`.
@@ -380,7 +385,7 @@ Keyboard testing has not run.
 Test keyboard navigation.
 
 ## References
-- [UI requirements](../requirements/ui.md)
+- [Requirements](../requirements.md)
 \`\`\`
 
 ## Process References
@@ -451,7 +456,7 @@ Question: Which filtering approach meets QUAL-002?
 Criteria: response time at 10,000 rows, keyboard access, new dependencies.
 
 ## Evidence
-- [UI requirements](../requirements/ui.md): target is 300 ms at 10,000 rows.
+- [Requirements](../requirements.md): QUAL-002 target is 300 ms at 10,000 rows.
 - Client-side filter: 840 ms median (trial script, commit 4be1c07).
 - Database filter with index: 41 ms median (same script and data).
 
@@ -634,7 +639,7 @@ Reasons for these choices: [decisions](decisions/).
 
 ## Shared work
 - Accepted baseline: <repository/default branch or local-only branch and limits>
-- Task ID allocation: <shared allocator>
+- Shared ID allocation: <shared allocator for tasks, requirement contracts, and records>
 - Publication: <combined and task-only paths, with separate task commits>
 
 ## Review and publication
@@ -650,7 +655,7 @@ Reasons for these choices: [decisions](decisions/).
 - Authorized bypasses: <mechanisms and limits, or none>
 
 ## Verification and operation
-- Setup and check profiles: <task-only, docs, implementation, checkpoint>
+- Setup and check profiles: <task-only, docs, requirement ID/reference checks, implementation, checkpoint>
 - Checkpoint assessment: <triggers, measurements, IDs, and recovery commands>
 - Sensitive actions: <approval rules and access limits>
 - Approved skills: <source, revision, scope, and setup>
@@ -697,7 +702,7 @@ Question: Which filtering approach meets QUAL-002?
 Criteria: response time at 10,000 rows, keyboard access, new dependencies.
 
 ## Evidence
-- [UI requirements](../requirements/ui.md): target is 300 ms at 10,000 rows.
+- [Requirements](../requirements.md): QUAL-002 target is 300 ms at 10,000 rows.
 - Client-side filter: 840 ms median (trial script, commit 4be1c07).
 - Database filter with index: 41 ms median (same script and data).
 
@@ -774,14 +779,14 @@ The originals stay outside Git. Records cite the IDs, not copies.
     text: `---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.3.0
+aad_version: 2.3.2
 ---
 
 ## Goal
 Help support staff find failed payments without engineering help.
 Add filtering by payment status.
 Preserve keyboard access.
-Meet the response-time target in the UI requirements.
+Meet the response-time target in the requirements.
 
 ## State
 Filtering is implemented on branch \`T-014-payment-filters\`.
@@ -792,7 +797,7 @@ Keyboard testing has not run.
 Test keyboard navigation.
 
 ## References
-- [UI requirements](../requirements/ui.md)
+- [Requirements](../requirements.md)
 `,
   },
 };

@@ -116,7 +116,7 @@ export const TREE: readonly TreeNode[] = [
     name: "requirements.md",
     depth: 2,
     purpose:
-      "Accepted behavior and quality requirements. Observable results, with numbers and conditions for limits.",
+      "Accepted behavior and quality requirements, with declared contract ID prefixes. Observable results, numbers and conditions for limits, and stable unique IDs for new and revised contracts.",
     source: "Required behavior and user outcomes",
   },
   {
@@ -124,7 +124,7 @@ export const TREE: readonly TreeNode[] = [
     depth: 2,
     optional: true,
     purpose:
-      "Optional detailed behavior files. New and revised contracts require stable domain-specific IDs. Bullets, When/Then examples, and Limits are recommended formatting.",
+      "Optional detailed behavior files. Each requirement statement belongs to an identified contract; bullets, When/Then examples, and Limits are recommended formatting.",
     source: "Required behavior and user outcomes",
   },
   {
@@ -315,9 +315,9 @@ export const ADOPTION: readonly string[] = [
   "Add the guide as `wiki/aad.md` and install the record schemas under `wiki/schemas/`. Reuse equivalent established project locations where appropriate, updating all links consistently.",
   "Create `AGENTS.md` and `wiki/README.md`, linking `wiki/schemas/README.md` and the project's knowledge collections.",
   "Document setup, checks, approvals, and completion rules.",
-  "Define task ID allocation.",
+  "Define shared ID allocation for tasks and requirement contracts.",
   "Name the accepted baseline and the combined and task-only publication methods.",
-  "Configure trusted task checks for both publication paths. Record any gaps.",
+  "Configure trusted task checks for both publication paths, and automated requirement ID and reference checks. Record any gaps.",
   "Record essential requirements and decisions.",
   "Record approved skills and tools.",
   "Record the selected ASD-STE100 issue.",
@@ -460,6 +460,18 @@ export const CASES: readonly (readonly [string, string])[] = [
     "Completion publication is automated",
     "Require authorized acceptance, trusted validation, and a separate task-only publication",
   ],
+  [
+    "New or revised requirement contract lacks a valid, unique ID or declared prefix",
+    "Reject in checks; preserve unchanged legacy IDs until a separately scoped audit",
+  ],
+  [
+    "Audit finds implementation differs from an accepted requirement",
+    "Treat code as observed behavior only; require behavior-change approval to change the requirement, or retain the conflict for a decision",
+  ],
+  [
+    "Work produces a reusable finding",
+    "Record in its accepted source (requirements, engineering, or decision record) and link supporting evidence",
+  ],
 ];
 
 export const WORKING_REFERENCE: readonly (readonly [string, string, string, string])[] = [
@@ -510,14 +522,14 @@ export const WORKING_REFERENCE: readonly (readonly [string, string, string, stri
 export const SAMPLE_TASK = `---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.3.0
+aad_version: 2.3.2
 ---
 
 ## Goal
 Help support staff find failed payments without engineering help.
 Add filtering by payment status.
 Preserve keyboard access.
-Meet the response-time target in the UI requirements.
+Meet the response-time target in the requirements.
 
 ## State
 Filtering is implemented on branch \`T-014-payment-filters\`.
@@ -528,7 +540,7 @@ Keyboard testing has not run.
 Test keyboard navigation.
 
 ## References
-- [UI requirements](../requirements/ui.md)
+- [Requirements](../requirements.md)
 `;
 
 // Prompt for a fresh agent in an empty or existing project folder. Keep in sync
@@ -539,7 +551,7 @@ export function adoptPrompt(repo: string, version: string): string {
 1. Download the guide and schemas: mkdir -p wiki/schemas && curl -fsSL https://raw.githubusercontent.com/${repo}/v${version}/aad.md -o wiki/aad.md && for f in README.md task.schema.md exploration.schema.md decision.schema.md; do curl -fsSL "https://raw.githubusercontent.com/${repo}/v${version}/wiki/schemas/$f" -o "wiki/schemas/$f"; done
    If wiki/aad.md already exists, compare the versions and ask me before you replace it. Read the full guide. §13 Adoption is the checklist; §9 has the AGENTS.md template.
 2. Examine the folder: Git repository, remote and default branch, README, AGENTS.md, CLAUDE.md and other agent instruction files, docs, build and test commands, CI. If there is no Git repository, ask me before you run git init. Do not overwrite or move existing files. Extend them, or link to existing equivalents.
-3. Create or extend AGENTS.md, wiki/README.md (linking wiki/schemas/README.md and the knowledge collections), and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, task ID allocation, publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
+3. Create or extend AGENTS.md, wiki/README.md (linking wiki/schemas/README.md and the knowledge collections), and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, shared ID allocation (tasks and requirement contracts), publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
 4. Create other documents only when they have real content now. Ask me for one small, real first task and create it in wiki/tasks/ using wiki/schemas/task.schema.md.
 5. Show me the changes and the 14 adoption steps, each marked done or gap. Do not commit or push without my approval.
 6. Tell me how to test the setup: a new agent session without this conversation does the next activity of the first task, and a second agent reviews the result.`;

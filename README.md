@@ -1,6 +1,6 @@
 # AAD: Agent-Assisted Development
 
-[![spec](https://img.shields.io/badge/spec-v2.3.1-c6f26a?labelColor=0c0e0f)](aad.md)
+[![spec](https://img.shields.io/badge/spec-v2.3.2-c6f26a?labelColor=0c0e0f)](aad.md)
 [![pages](https://github.com/jveres/aad/actions/workflows/pages.yml/badge.svg)](https://github.com/jveres/aad/actions/workflows/pages.yml)
 
 AAD is a working process for software projects where **people and AI agents
@@ -10,7 +10,7 @@ A *worker* is a person or an agent. Each worker must be able to find the rules,
 understand the task, and continue the work **without earlier conversations**.
 People remain responsible for project policies, access, and approval decisions.
 
-- **Spec:** [`aad.md`](aad.md) (version 2.3.1) and record schemas in [`wiki/schemas/`](wiki/schemas/README.md). These are the accepted sources. The README and the site summarize them.
+- **Spec:** [`aad.md`](aad.md) (version 2.3.2) and record schemas in [`wiki/schemas/`](wiki/schemas/README.md). These are the accepted sources (relative links between them target their installed layout under `wiki/` and `public/`). The README and the site summarize them.
 - **Site:** <https://jveres.github.io/aad/>. An interactive introduction with a state machine, a task linter, and a publication classifier.
 
 ---
@@ -21,6 +21,7 @@ People remain responsible for project policies, access, and approval decisions.
 - [The method in brief](#the-method-in-brief)
   - [Core rules](#core-rules)
   - [Repository layout](#repository-layout)
+  - [Behavior requirements](#behavior-requirements)
   - [Tasks](#tasks)
   - [Task lifecycle](#task-lifecycle)
   - [Publication](#publication)
@@ -39,12 +40,12 @@ Open an agent in the project folder and paste this prompt. The folder can be
 empty or an existing project. You do not need to download anything first.
 
 ```text
-Set up AAD (Agent-Assisted Development) 2.3.1 in this project folder. The folder can be empty or an existing project.
+Set up AAD (Agent-Assisted Development) 2.3.2 in this project folder. The folder can be empty or an existing project.
 
-1. Download the guide and schemas: mkdir -p wiki/schemas && curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.1/aad.md -o wiki/aad.md && for f in README.md task.schema.md exploration.schema.md decision.schema.md; do curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.1/wiki/schemas/$f" -o "wiki/schemas/$f"; done
+1. Download the guide and schemas: mkdir -p wiki/schemas && curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.2/aad.md -o wiki/aad.md && for f in README.md task.schema.md exploration.schema.md decision.schema.md; do curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.2/wiki/schemas/$f" -o "wiki/schemas/$f"; done
    If wiki/aad.md already exists, compare the versions and ask me before you replace it. Read the full guide. §13 Adoption is the checklist; §9 has the AGENTS.md template.
 2. Examine the folder: Git repository, remote and default branch, README, AGENTS.md, CLAUDE.md and other agent instruction files, docs, build and test commands, CI. If there is no Git repository, ask me before you run git init. Do not overwrite or move existing files. Extend them, or link to existing equivalents.
-3. Create or extend AGENTS.md, wiki/README.md (linking wiki/schemas/README.md and the knowledge collections), and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, task ID allocation, publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
+3. Create or extend AGENTS.md, wiki/README.md (linking wiki/schemas/README.md and the knowledge collections), and wiki/engineering.md. Make sure that CLAUDE.md contains the line @AGENTS.md. Fill in what you can find in the project. Ask me, in one short list with your recommended defaults, the decisions that only people can make: accepted baseline, shared ID allocation (tasks and requirement contracts), publication methods, reviewers, approval authority, sensitive actions, ASD-STE100 issue. Do not leave placeholders. Record each unresolved item under "Adoption gaps".
 4. Create other documents only when they have real content now. Ask me for one small, real first task and create it in wiki/tasks/ using wiki/schemas/task.schema.md.
 5. Show me the changes and the 14 adoption steps, each marked done or gap. Do not commit or push without my approval.
 6. Tell me how to test the setup: a new agent session without this conversation does the next activity of the first task, and a second agent reviews the result.
@@ -58,9 +59,9 @@ copy. The tag matches the AAD version:
 
 ```sh
 mkdir -p wiki/schemas wiki/tasks && \
-  curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.1/aad.md -o wiki/aad.md && \
+  curl -fsSL https://raw.githubusercontent.com/jveres/aad/v2.3.2/aad.md -o wiki/aad.md && \
   for f in README.md task.schema.md exploration.schema.md decision.schema.md; do \
-    curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.1/wiki/schemas/$f" -o "wiki/schemas/$f"; \
+    curl -fsSL "https://raw.githubusercontent.com/jveres/aad/v2.3.2/wiki/schemas/$f" -o "wiki/schemas/$f"; \
   done
 ```
 
@@ -69,9 +70,9 @@ The adoption steps in [`aad.md` §13](aad.md#13-adoption):
 1. Add the guide as `wiki/aad.md` and install the record schemas under `wiki/schemas/`. Reuse equivalent project locations where appropriate, updating all links consistently.
 2. Create `AGENTS.md` (template in [§9](aad.md#9-agent-entry-point)) and `wiki/README.md`, linking `wiki/schemas/README.md` and the knowledge collections.
 3. Document setup, checks, approvals, and completion rules in `wiki/engineering.md`.
-4. Define task ID allocation.
+4. Define shared ID allocation for tasks and requirement contracts.
 5. Name the accepted baseline and the combined and task-only publication methods.
-6. Configure trusted task checks for both publication paths. Record any gaps.
+6. Configure trusted task checks for both publication paths, and automated requirement ID and reference checks. Record any gaps.
 7. Record essential requirements and decisions.
 8. Record approved skills and tools.
 9. Record the selected ASD-STE100 issue.
@@ -157,6 +158,24 @@ index.
 Agents keep private notes and plans in their own tools. Remembered project
 facts are hints: compare them with current sources before you act on them.
 
+### Behavior requirements
+
+Keep accepted behavior and quality requirements in `wiki/requirements.md` (with
+optional detail files in `wiki/requirements/`). Describe observable results, give
+numbers and conditions for time or resource limits, and assign every new or
+revised contract a stable, unique ID using prefixes declared in the requirements
+index (such as `AUTH-007` or `UX-012`), allocated through the project's shared
+process. Existing IDs remain valid and retired IDs are never reused.
+
+Adding, removing, or altering an accepted behavior or quality obligation requires
+the same approval as a task-goal change and updates tests in the same change;
+proposals stay clearly marked and separate from accepted requirements. Automate
+checks for ID presence, uniqueness, declared prefixes, nonempty contracts, and
+valid references in the project's check command, and record enforcement gaps.
+Record reusable findings in their accepted source (`wiki/requirements.md`,
+`wiki/engineering.md`, or `wiki/decisions/`) with linked evidence, and do not
+rewrite accepted requirements to match observed code without approval.
+
 ### Tasks
 
 A task is a unit of work with a clear goal ([`wiki/schemas/task.schema.md`](wiki/schemas/task.schema.md)). It has a YAML header for tools and
@@ -166,7 +185,7 @@ a Markdown body for people:
 ---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.3.1
+aad_version: 2.3.2
 ---
 
 ## Goal
@@ -179,7 +198,7 @@ Filtering is implemented on branch `T-014-payment-filters`. Unit tests pass. …
 Test keyboard navigation.
 
 ## References
-- [UI requirements](../requirements/ui.md)
+- [Requirements](../requirements.md)
 ```
 
 | Field / section | Meaning |
@@ -279,14 +298,15 @@ from the spec (core rule 1).
 
 | Section | What you can do |
 |---|---|
+| §01 Rules | Core rules and the Working Reference table |
 | §02 Repository | Explore the layout, the accepted source, and an example file for each path, including `wiki/schemas/` (spec and schema examples are checked against `aad.md` and `wiki/schemas/*.md`) |
 | §03 Lifecycle | Drive a task through the state machine; see routine, approval-gated, and rejected transitions |
-| §04 Linter | Edit a task file and get live diagnostics against `wiki/schemas/task.schema.md` and `wiki/aad.md` (header, sections, `Next`, transitions, dependencies, version) |
+| §04 Linter | Edit a task file and get live diagnostics against `wiki/schemas/task.schema.md` and `wiki/aad.md` (header, sections, `Next`, relative repository links, transitions, dependencies, version) |
 | §05 Publication | Compose a pull request and see its classification and publication path |
 | §06 Activities | Step through each development activity |
-| §01 Rules | Core rules and the Working Reference table |
 | §07 Startup | Compute the guide-reading rule and the next version bump |
 | §08 Adoption | Track the 14 adoption steps (stored locally) and search the decision cases |
+| §09 Latest change | Inspect the latest release obligations and notes parsed directly from `aad.md` |
 
 The linter checks structure only. Semantic scope review still applies, as the spec states.
 
@@ -297,7 +317,7 @@ Requirements: Node.js 22 or later.
 | Tool | Version | Role |
 |---|---|---|
 | [TypeScript](https://www.typescriptlang.org/) | 7.0.2 (native compiler) | Type checking and compiling `src/` to ES modules in `public/js/` |
-| [Biome](https://biomejs.dev/) | 2.5.15 | Formatting and linting for TS, JS, CSS, HTML, and JSON |
+| [Biome](https://biomejs.dev/) | 2.6.8 | Formatting and linting for TS, JS, CSS, HTML, and JSON |
 
 ```sh
 npm ci
@@ -332,9 +352,9 @@ the tag matches the spec version.
 ## Releasing a new AAD version
 
 1. Update `aad.md`: the `version` in the header, and the **Latest Change** section, which must start with the new version.
-2. Set the same version in `package.json` and in the fallback `guideVersion` in `src/main.ts`.
-3. Update the version in this README (badge and adopt command).
-4. Run `npm run check`. It fails if the versions disagree.
+2. Set the same version in `package.json`, `package-lock.json`, the fallback `guideVersion` in `src/main.ts`, `wiki/schemas/task.schema.md`, `SAMPLE_TASK` in `src/content.ts`, and the versioned examples in `src/samples.ts`.
+3. Update the version in this README (badge, spec note, adopt prompt, download command, and task example).
+4. Run `npm run check` and `npm run build`. They fail if versions, prompts, rules, decision cases, or samples disagree.
 5. Commit, then tag and push:
 
    ```sh

@@ -73,7 +73,7 @@ Each published task must contain these four `##` sections:
 
 - Set `Next` to `None` only when `status` is `done`. For each other status,
   `Next` must name an action.
-- Write links relative to the task file.
+- Write links to repository files relative to the task file.
 
 ## Minimal Template
 
@@ -85,14 +85,14 @@ example values and body text below are illustrative (`wiki/tasks/T-014.md`):
 ---
 title: Add filtering to the payments table
 status: in_progress
-aad_version: 2.3.0
+aad_version: 2.3.2
 ---
 
 ## Goal
 Help support staff find failed payments without engineering help.
 Add filtering by payment status.
 Preserve keyboard access.
-Meet the response-time target in the UI requirements.
+Meet the response-time target in the requirements.
 
 ## State
 Filtering is implemented on branch `T-014-payment-filters`.
@@ -103,7 +103,7 @@ Keyboard testing has not run.
 Test keyboard navigation.
 
 ## References
-- [UI requirements](../requirements/ui.md)
+- [Requirements](../requirements.md)
 ```
 
 ## Process References

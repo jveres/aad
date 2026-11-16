@@ -1418,9 +1418,13 @@ textarea:focus-visible {
 }
 
 .changelog ul {
-  margin: 8px 0 0;
+  margin: 8px 0 12px;
   padding-left: 18px;
   max-width: 80ch;
+}
+
+.changelog p:last-child {
+  margin-bottom: 0;
 }
 
 .changelog li {

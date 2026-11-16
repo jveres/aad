@@ -29,10 +29,16 @@ const REPO = "jveres/aad";
 
 interface Spec {
   readonly version: string;
-  readonly latest: { readonly version: string; readonly items: readonly string[] } | undefined;
+  readonly latest:
+    | {
+        readonly version: string;
+        readonly items: readonly string[];
+        readonly notes: readonly string[];
+      }
+    | undefined;
 }
 
-let guideVersion = "2.3.1";
+let guideVersion = "2.3.2";
 
 // ── spec ─────────────────────────────────────────────────────────────────────
 
@@ -43,11 +49,30 @@ export function parseSpec(text: string): Spec | undefined {
   if (!tail) return { version, latest: undefined };
   const lines = tail.trim().split(/\r?\n/);
   const items: string[] = [];
+  const notes: string[] = [];
+  let inItem = false;
+  let inNote = false;
   for (const line of lines.slice(1)) {
-    if (/^-\s+/.test(line)) items.push(line.replace(/^-\s+/, ""));
-    else if (line.trim() && items.length > 0) items[items.length - 1] += ` ${line.trim()}`;
+    const trimmed = line.trim();
+    if (!trimmed) {
+      inItem = false;
+      inNote = false;
+      continue;
+    }
+    if (/^-\s+/.test(line)) {
+      items.push(line.replace(/^-\s+/, "").trim());
+      inItem = true;
+      inNote = false;
+    } else if (inItem && items.length > 0) {
+      items[items.length - 1] += ` ${trimmed}`;
+    } else if (inNote && notes.length > 0) {
+      notes[notes.length - 1] += ` ${trimmed}`;
+    } else {
+      notes.push(trimmed);
+      inNote = true;
+    }
   }
-  return { version, latest: { version: lines[0]?.trim() ?? version, items } };
+  return { version, latest: { version: lines[0]?.trim() ?? version, items, notes } };
 }
 
 async function loadSpec(): Promise<void> {
@@ -72,6 +97,7 @@ async function loadSpec(): Promise<void> {
     log.replaceChildren(
       h("p", { class: "label" }, spec.latest.version),
       h("ul", {}, ...spec.latest.items.map((i) => h("li", {}, inline(i)))),
+      ...spec.latest.notes.map((n) => h("p", { class: "muted" }, inline(n))),
     );
   }
   lint.run();

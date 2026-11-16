@@ -95,7 +95,8 @@ export const CREATION: readonly Creation[] = [
   },
   {
     status: "done",
-    condition: "Records previously approved completed work",
+    condition:
+      "The goal and the quality conditions are met, and the required approvals are complete",
     classification: "approval-sensitive",
   },
 ];
